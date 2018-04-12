@@ -1,0 +1,6 @@
+*.pyc
+data
+.DS_Store
+*.pkl
+MUJOCO_LOG.TXT
+*-info
