@@ -20,7 +20,9 @@ parser.add_argument('--num_directions', type=int, default=50)
 parser.add_argument('--num_top_directions', type=int, default=20)
 parser.add_argument('--perturbation_length', type=float, default=0.1)
 parser.add_argument('--test_batch_size', type=int, default=100)
+# Hyperparam tuning params
 parser.add_argument('--exp', action='store_true')
+parser.add_argument('--threshold', type=int, default=100000, help='Number of accesses after which performance is evaluated')
 
 args = parser.parse_args()
 
@@ -72,6 +74,11 @@ for t in range(args.tsteps):
     if not args.exp:        
         print(env.get_num_accesses(), mse_loss / args.test_batch_size)
 
+    # Check number of accesses for hyperparam tuning
+    if args.exp:
+        if env.get_num_accesses() > args.threshold:
+            break
+
 if args.exp:
     g = open('data/hyperparam_tuning_results', 'a')
     mse_loss = 0.
@@ -81,5 +88,4 @@ if args.exp:
         _, reward, _, _ = env.step(yhat, test=True)
         loss = -reward[0]
         mse_loss += loss
-    # print('Stepsize:', args.stepsize, 'Numdirections:', args.num_directions, 'NumTopdirections:', args.num_top_directions, 'PertubationLength:', args.perturbation_length, 'Loss:', mse_loss / args.test_batch_size)
     g.write(str(args.stepsize)+','+str(args.num_directions)+','+str(args.num_top_directions)+','+str(args.perturbation_length)+','+str(mse_loss / args.test_batch_size)+'\n')
