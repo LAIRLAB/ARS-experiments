@@ -44,7 +44,7 @@ for t in range(args.tsteps):
     # mean and std
     mean = stats.mean
     std = stats.std
-    for d in range(len(directions)):
+    for d in range(args.num_directions):
         for posneg in range(2):
             wp = perturbed_ws[posneg, d]
             # Get data

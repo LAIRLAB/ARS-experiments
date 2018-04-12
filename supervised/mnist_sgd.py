@@ -7,6 +7,8 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 from envs.mnist.mnist import MNIST
+import numpy as np
+import random
 import ipdb
 
 # Training settings
@@ -31,6 +33,8 @@ args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
 torch.manual_seed(args.seed)
+np.random.seed(args.seed)
+random.seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
