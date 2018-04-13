@@ -38,7 +38,7 @@ parser.add_argument('--perturbation_length', type=float, default=0.01, help='Per
 
 # Hyperparam tuning params
 parser.add_argument('--exp', action='store_true')
-parser.add_argument('--threshold', type=int, default=100000)
+parser.add_argument('--threshold', type=int, default=10000)
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
