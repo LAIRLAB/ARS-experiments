@@ -22,7 +22,6 @@ random.seed(args.seed)
 env = LinReg(args.input_dim, args.batch_size)
 optim = Adam(args.input_dim+1, args.lr)
 
-# Predicting mean and variance
 w = np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
 for t in range(args.tsteps):
@@ -41,7 +40,7 @@ for t in range(args.tsteps):
         xi = x[i].reshape(-1, 1)
         fim += xi.dot(xi.T)
     # fim *= (1./args.batch_size) # * (1./(std_yhat**2))
-    fim += 1e-8 * np.eye(args.input_dim+1)
+    fim += 1e-3 * np.eye(args.input_dim+1)
     fim_inv = np.linalg.inv(fim)
     # w = optim.update(w, fim_inv.dot(grad))
     w = w - fim_inv.dot(grad)
