@@ -22,7 +22,6 @@ random.seed(args.seed)
 env = LinReg(args.input_dim, args.batch_size)
 optim = Adam(args.input_dim+1, args.lr)
 
-# Predicting mean and variance
 w = np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
 for t in range(args.tsteps):

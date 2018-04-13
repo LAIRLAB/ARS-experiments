@@ -16,7 +16,7 @@ class LinReg(gym.Env):
         if not test:            
             self.num_accesses += self.batch_size
         # Compute squared loss
-        loss = ((yhat - self.y)**2) * (1./(2 * self.batch_size))
+        loss = ((yhat - self.y)**2) * (1./2)
         grad = (1./self.batch_size) * self.x.T.dot(yhat - self.y)
         # Obs returned is none, reward is -loss, done is always True and info is None
         return None, -loss, True, {'grad': grad}
