@@ -35,6 +35,10 @@ parser.add_argument('--stepsize', type=float, default=0.001, help='Stepsize for 
 parser.add_argument('--num_directions', type=int, default=100, help='Number of directions sampled for ARS')
 parser.add_argument('--num_top_directions', type=int, default=10, help='Number of top direction used for ARS')
 parser.add_argument('--perturbation_length', type=float, default=0.01, help='Perturbation length for ARS')
+
+# Hyperparam tuning params
+parser.add_argument('--exp', action='store_true')
+parser.add_argument('--threshold', type=int, default=100000)
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
@@ -144,4 +148,25 @@ for t in range(args.tsteps):
     pred = output.data.max(1, keepdim=True)[1]
     correct = pred.eq(y.data.view_as(pred)).long().sum()
     accuracy = correct / args.test_batch_size
-    print(env.get_num_accesses(), accuracy)
+    if not args.exp:        
+        print(env.get_num_accesses(), accuracy)
+
+    # Check number of accesses for hyperparam tuning
+    if args.exp:
+        if env.get_num_accesses() > args.threshold:
+            break
+
+if args.exp:
+    g = open('data/hyperparam_tuning_results_mnist', 'a')
+    model.eval()
+    x, y = env.reset(test=True)
+    x = x.view(args.test_batch_size, 1, 28, 28)
+    if args.cuda:
+        x, y = x.cuda(), y.cuda()
+    x, y = Variable(x, volatile=True), Variable(y, volatile=True)
+    output = model(x)
+    pred = output.data.max(1, keepdim=True)[1]
+    correct = pred.eq(y.data.view_as(pred)).long().sum()
+    accuracy = correct / args.test_batch_size
+
+    g.write(str(args.stepsize)+','+str(args.num_directions)+','+str(args.num_top_directions)+','+str(args.perturbation_length)+','+str(accuracy)+'\n')

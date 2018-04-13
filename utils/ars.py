@@ -74,6 +74,8 @@ def update_parameters(params, stepsize, top_returns, top_directions):
     '''
     num_top = top_directions.shape[0]
     std_returns = np.std(top_returns)
+    if std_returns == 0:
+        std_returns = 1.0
     diff_returns = top_returns[:, 0] - top_returns[:, 1]  # assuming that the first column is the +ve direction and the second column is the -ve direction
     params_update = np.dot(top_directions.T, diff_returns)
     new_params = params + (stepsize/(num_top*std_returns)) * params_update
