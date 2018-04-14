@@ -32,18 +32,18 @@ while True:
     x, y = env.reset()
     pred = x.dot(w)
     mu_yhat = pred
-    std_yhat = 0.01
+    std_yhat = 0.1 # 0.01
     yhat = np.random.normal(mu_yhat, std_yhat)
     _, reward, _, _ = env.step(yhat)
     mse_loss = -np.mean(reward)
     # grad = (1./args.batch_size) * (x.T.dot(reward*(yhat - mu_yhat))) # * (1./(std_yhat**2))
-    grad = (x.T.dot(reward*(yhat - mu_yhat)))
+    grad = -(x.T.dot(reward*(yhat - mu_yhat)))
     fim = 0
     for i in range(args.batch_size):
         xi = x[i].reshape(-1, 1)
         fim += xi.dot(xi.T)
     # fim *= (1./args.batch_size) # * (1./(std_yhat**2))
-    fim += 1e-3 * np.eye(args.input_dim+1)
+    fim += 1e-8 * np.eye(args.input_dim+1)
     fim_inv = np.linalg.inv(fim)
     # w = optim.update(w, fim_inv.dot(grad))
     w = w - fim_inv.dot(grad)
