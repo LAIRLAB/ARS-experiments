@@ -2,7 +2,7 @@ import numpy as np
 import argparse
 from envs.LQG.LQG import LQGEnv
 from utils.adam import Adam
-#from IPython import embed
+from IPython import embed
 
 
 class Trajectory(object):
@@ -70,7 +70,7 @@ def processing_batch(trajs, gamma = 0.99):
     return xs, acts, advs, ctgs
         
 def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1, 
-            batch_size = 100, max_iter = 100, K0 = None, Natural = False):
+            batch_size = 100, max_iter = 100, K0 = None, Natural = False, kl = 1e-3):
 
     a_dim = env.a_dim
     x_dim = env.x_dim 
@@ -81,14 +81,14 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
     baseline = 0.0 
 
     #evalue the optimal K:
-    optimal_perf = evaluation(env = env, batch_size = batch_size*2, K = env.optimal_K)
-    print "optimal K's performance is {}".format(optimal_perf)
+    #optimal_perf = evaluation(env = env, batch_size = batch_size*2, K = env.optimal_K)
+    print "optimal K's performance is {}".format(-env.optimal_cost)
 
     test_perfs = []
     for e in range(max_iter):
 
         #evaluation on the current K:
-        perf = evaluation(env = env, batch_size = batch_size*2, K=K)
+        perf = evaluation(env = env, batch_size = batch_size, K=K)
         print "at epoch {}, current K's avg cummulative reward is {}".format(e, perf)
         test_perfs.append(perf)
         num_steps = 0
@@ -105,33 +105,42 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
         weighted_d_acts_s = np.matmul(weighted_d_acts[:,:,np.newaxis], xs[:, np.newaxis,:])
         gradient = np.mean(weighted_d_acts_s,axis=0)
 
-        new_flatten_param = optimizer.update(K.reshape(env.x_dim*env.a_dim), 
-            -gradient.reshape(env.x_dim*env.a_dim))
-        
-        K = new_flatten_param.reshape(env.a_dim, env.x_dim)
+        if Natural is True:
+            JJp = np.mean(np.matmul(xs[:,:,np.newaxis], xs[:,np.newaxis,:]),axis=0)
+            descent_dir = (np.linalg.lstsq(JJp+np.eye(env.x_dim)*1e-3, gradient.T, rcond = None)[0]).T
+            #descent_dir = np.linalg.inv(JJp+1e-3*np.eye(env.x_dim)).dot(gradient.T).T
+            lr = np.sqrt(kl/(gradient.flatten().dot(descent_dir.flatten())))
+            K = K + lr * descent_dir
+            #embed()
+        else:
+            new_flatten_param = optimizer.update(K.reshape(env.x_dim*env.a_dim), 
+                -gradient.reshape(env.x_dim*env.a_dim))
+            K = new_flatten_param.reshape(env.a_dim, env.x_dim)
     
     return test_perfs
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--tsteps', type=int, default=100)
-parser.add_argument('--x_dim', type=int, default=100)
+parser.add_argument('--x_dim', type=int, default=200)
 parser.add_argument('--a_dim', type=int, default=1)
 parser.add_argument('--lr', type=float, default=1e-4)
-parser.add_argument('--seed', type=int, default=1)
-parser.add_argument('--batch_size', type=int, default=200)
+parser.add_argument('--seed', type=int, default=1000)
+parser.add_argument('--batch_size', type=int, default=300) 
+#in every epoch, we generate batch_size # of steps (batch_size/T = num of trajectories)
 parser.add_argument('--iters', type=int, default=100)
-
 args = parser.parse_args()
-np.random.seed(args.seed)
+
 
 env = LQGEnv(x_dim = args.x_dim, u_dim = args.a_dim, rank = 5)
 optimizer = Adam(args.x_dim*args.a_dim, args.lr)
 
+np.random.seed(args.seed)
+
 K0 = np.random.randn(args.a_dim, args.x_dim)*0.01
 test_perfs = policy_gradient_adam_linear_policy(env, explore_mag=0.1,
         optimizer = optimizer, batch_size=args.batch_size, max_iter=args.iters, 
-        K0 = K0)
+        K0 = K0, Natural=False, kl = args.lr)
 
 
 

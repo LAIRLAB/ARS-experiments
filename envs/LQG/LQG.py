@@ -68,7 +68,16 @@ def cost_finite_K(A_true,B_true,Q,R,x0,T,K):
 
   return cost.flatten()
 
+def finite_LQR_solver(A,B,Q,R,T, x_0,Cov_0, noise_cov):
+    x_dim = A.shape[0]
+    a_dim = B.shape[1]
+    P = np.zeros((x_dim, x_dim))    
 
+    for i in range(T):
+        P = (A.T.dot(P).dot(A) + Q 
+            - A.T.dot(P).dot(B).dot(LA.inv(B.T.dot(P).dot(B)+R)).dot(B.T).dot(P).dot(A))
+
+    return x_0.dot(P).dot(x_0) + np.trace(Cov_0.dot(P))
 
 
 #class LinearQuadGausEnv(mujoco_env.MujocoEnv, utils.EzPickle):
@@ -93,8 +102,6 @@ class LQGEnv(gym.Env):
         self.Q = 1e-3*np.eye(x_dim)
         self.R = np.eye(u_dim)
 
-        self.optimal_K = lqr_gain(A = self.A, B = self.B, Q = self.Q, R = self.R)
-
         self.x_dim = x_dim
         self.a_dim = u_dim
 
@@ -105,10 +112,13 @@ class LQGEnv(gym.Env):
         self.init_state_cov = np.eye(self.x_dim)*0.1
 
         self.state = None
-        self.noise_cov = np.eye(self.x_dim)*0.001 
+        self.noise_cov = np.eye(self.x_dim)*0.0001
 
-        self.T = 50
+        self.T = 20
         
+        self.optimal_cost = finite_LQR_solver(self.A,self.B, self.Q,self.R, self.T, 
+                self.init_state_mean,self.init_state_cov, self.noise_cov)
+
         self.reset()
 
     def reset(self):
