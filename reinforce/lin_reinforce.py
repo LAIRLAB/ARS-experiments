@@ -36,8 +36,8 @@ while True:
     yhat = np.random.normal(mu_yhat, std_yhat)
     _, reward, _, _ = env.step(yhat)
     mse_loss = -np.mean(reward)
-    grad = (1./args.batch_size) * (x.T.dot(reward*(yhat - mu_yhat))) #* (1./(std_yhat**2))
-    w = optim.update(w, -grad)
+    grad = -(1./args.batch_size) * (x.T.dot(reward*(yhat - mu_yhat))) #* (1./(std_yhat**2))
+    w = optim.update(w, grad)
 
     # Test
     x, y = env.reset()
@@ -45,7 +45,7 @@ while True:
     _, reward, _, _ = env.step(yhat, test=True)
     mse_loss = -np.mean(reward)
 
-    print "mse_loss: {}".format(mse_loss)
+    # print "mse_loss: {}".format(mse_loss)
         
     # print(env.get_num_accesses(), loss)
     g.write(str(env.get_num_accesses())+','+str(mse_loss)+'\n')
