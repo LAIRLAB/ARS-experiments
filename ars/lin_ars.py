@@ -34,8 +34,7 @@ env = LinReg(args.input_dim, args.batch_size)
 # optim = Adam(args.input_dim+1, args.lr)
 stats = RunningStat(args.input_dim+1)
 
-# Predicting mean and variance
-w = np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
+w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
 # Log file
 g = open('data/linear-ars-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
