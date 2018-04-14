@@ -4,7 +4,7 @@ import numpy as np
 
 seeds = [5488, 7151, 6027, 5448, 4236, 6458, 4375, 8917, 9636, 3834]
 # exps = ['ars', 'reinforce', 'sgd', 'naturalreinforce', 'newton']
-exps = ['ars', 'reinforce', 'sgd']
+exps = ['ars', 'reinforce', 'sgd', 'newton']
 num_accesses = 100000
 
 n_accesses = {}
@@ -39,7 +39,7 @@ for e in exps:
     stdresults[e] = np.std(results[e], axis=0)
 
 # Plotting
-colors = ['red', 'blue', 'green']
+colors = ['red', 'blue', 'green', 'cyan']
 for i, e in enumerate(exps):
     plt.plot(n_accesses[e][5488], meanresults[e], color=colors[i], label=e)
     plt.fill_between(n_accesses[e][5488], meanresults[e]-stdresults[e], meanresults[e]+stdresults[e], facecolor=colors[i], alpha=0.2)
