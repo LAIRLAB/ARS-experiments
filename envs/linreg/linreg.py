@@ -25,7 +25,7 @@ class LinReg(gym.Env):
         self.x = np.random.randn(self.batch_size, self.input_dim+1)
         # Bias term should be 1
         self.x[:, 0] = 1
-        self.y = self.x.dot(self.w) + np.random.randn()*0.01
+        self.y = self.x.dot(self.w) + np.random.randn()*0.001
         return self.x, self.y
 
     def get_num_accesses(self):
