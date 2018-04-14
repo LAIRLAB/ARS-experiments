@@ -7,6 +7,7 @@ from utils.adam import Adam
 from utils.ars import *
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--n_accesses', type=int, default=100000)
 parser.add_argument('--tsteps', type=int, default=100)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--momentum', type=float, default=0.5)
@@ -36,7 +37,10 @@ stats = RunningStat(args.input_dim+1)
 # Predicting mean and variance
 w = np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
-for t in range(args.tsteps):
+# Log file
+g = open('data/linear-ars-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
+# for t in range(args.tsteps):
+while True:    
     # Sample directions
     directions = sample_directions(args.num_directions, args.input_dim+1)
     # Perturb parameters
@@ -72,7 +76,12 @@ for t in range(args.tsteps):
         loss = -reward[0]
         mse_loss += loss
     if not args.exp:        
-        print(env.get_num_accesses(), mse_loss / args.test_batch_size)
+        # print(env.get_num_accesses(), mse_loss / args.test_batch_size)
+        g.write(str(env.get_num_accesses())+','+str(mse_loss / args.test_batch_size)+'\n')
+
+    # Check termination
+    if env.get_num_accesses() >= args.n_accesses:
+        break
 
     # Check number of accesses for hyperparam tuning
     if args.exp:

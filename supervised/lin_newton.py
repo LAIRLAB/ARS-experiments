@@ -6,6 +6,7 @@ import ipdb
 from utils.adam import Adam
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--n_accesses', type=int, default=100000)
 parser.add_argument('--tsteps', type=int, default=100)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--momentum', type=float, default=0.5)
@@ -24,7 +25,9 @@ optim = Adam(args.input_dim+1, args.lr)
 
 w = np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
-for t in range(args.tsteps):
+g = open('linear-newton-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
+while True:    
+# for t in range(args.tsteps):
     # Training
     x, y = env.reset()
     yhat = x.dot(w)
@@ -46,4 +49,10 @@ for t in range(args.tsteps):
     yhat = x.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
     loss = -np.mean(reward)
-    print(env.get_num_accesses(), loss)
+    # print(env.get_num_accesses(), loss)
+
+    g.write(str(env.get_num_accesses())+','+str(loss)+'\n')
+
+    # Check termination
+    if env.get_num_accesses() >= args.n_accesses:
+        break
