@@ -6,7 +6,7 @@ import ipdb
 from utils.adam import Adam
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--n_accesses', type=int, default=100000)
+parser.add_argument('--n_accesses', type=int, default=1000000)
 parser.add_argument('--tsteps', type=int, default=100)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--momentum', type=float, default=0.5)
@@ -23,11 +23,10 @@ random.seed(args.seed)
 env = LinReg(args.input_dim, args.batch_size)
 optim = Adam(args.input_dim+1, args.lr)
 
-w = np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
+w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
 g = open('linear-naturalreinforce-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
 while True:    
-# for t in range(args.tsteps):
     # Training
     x, y = env.reset()
     pred = x.dot(w)
@@ -36,17 +35,16 @@ while True:
     yhat = np.random.normal(mu_yhat, std_yhat)
     _, reward, _, _ = env.step(yhat)
     mse_loss = -np.mean(reward)
-    # grad = (1./args.batch_size) * (x.T.dot(reward*(yhat - mu_yhat))) # * (1./(std_yhat**2))
-    grad = -(x.T.dot(reward*(yhat - mu_yhat)))
+    grad = -(1./args.batch_size) * (x.T.dot(reward*(yhat - mu_yhat))) # * (1./(std_yhat**2))
     fim = 0
     for i in range(args.batch_size):
         xi = x[i].reshape(-1, 1)
         fim += xi.dot(xi.T)
-    # fim *= (1./args.batch_size) # * (1./(std_yhat**2))
-    fim += 1e-8 * np.eye(args.input_dim+1)
-    fim_inv = np.linalg.inv(fim)
-    # w = optim.update(w, fim_inv.dot(grad))
-    w = w - fim_inv.dot(grad)
+    fim *= (1./args.batch_size) # * (1./(std_yhat**2))
+    fim += 1e-3 * np.eye(args.input_dim+1)
+    descent_dir = np.linalg.lstsq(fim, grad, rcond=None)[0]
+    lr = np.sqrt(args.lr / descent_dir.dot(grad))
+    w = w - lr * descent_dir
 
     # Test
     x, y = env.reset()
