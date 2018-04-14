@@ -1,6 +1,7 @@
 import numpy as np 
 import argparse
 from envs.LQG.LQG import LQGEnv
+from envs.linreg.linreg import LinReg
 from utils.adam import Adam
 from IPython import embed
 
@@ -100,6 +101,11 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
         #compute gradient:
         mean_acts = xs.dot(K.T)
         d_acts = acts - mean_acts
+        
+        #d_acts = d_acts.reshape(d_acts.shape[0])
+        #grad = (xs.T.dot(ctgs*d_acts))/batch_size
+        #gradient = grad.reshape(1, env.x_dim)
+
         weighted_d_acts = np.matmul(d_acts[:,:,np.newaxis], advs[:,np.newaxis, np.newaxis])
         weighted_d_acts = np.reshape(weighted_d_acts, (weighted_d_acts.shape[0], env.a_dim))
         weighted_d_acts_s = np.matmul(weighted_d_acts[:,:,np.newaxis], xs[:, np.newaxis,:])
@@ -122,23 +128,24 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--tsteps', type=int, default=100)
-parser.add_argument('--x_dim', type=int, default=200)
+parser.add_argument('--x_dim', type=int, default=100)
 parser.add_argument('--a_dim', type=int, default=1)
-parser.add_argument('--lr', type=float, default=1e-4)
+parser.add_argument('--lr', type=float, default=1e-3)
 parser.add_argument('--seed', type=int, default=1000)
-parser.add_argument('--batch_size', type=int, default=300) 
+parser.add_argument('--batch_size', type=int, default=100) 
 #in every epoch, we generate batch_size # of steps (batch_size/T = num of trajectories)
 parser.add_argument('--iters', type=int, default=100)
 args = parser.parse_args()
 
-
 env = LQGEnv(x_dim = args.x_dim, u_dim = args.a_dim, rank = 5)
+#env = LinReg(args.x_dim, batch_size = 1)
 optimizer = Adam(args.x_dim*args.a_dim, args.lr)
 
 np.random.seed(args.seed)
 
 K0 = np.random.randn(args.a_dim, args.x_dim)*0.01
-test_perfs = policy_gradient_adam_linear_policy(env, explore_mag=0.1,
+#K0 = 5*np.random.randn(args.a_dim, args.x_dim) / np.sqrt(args.x_dim*args.a_dim)
+test_perfs = policy_gradient_adam_linear_policy(env, explore_mag=0.5,
         optimizer = optimizer, batch_size=args.batch_size, max_iter=args.iters, 
         K0 = K0, Natural=False, kl = args.lr)
 
