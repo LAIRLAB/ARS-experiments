@@ -37,7 +37,8 @@ stats = RunningStat(args.input_dim+1)
 w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
 # Log file
-g = open('data/linear-ars-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
+if not args.exp:
+    g = open('data/linear-ars-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
 # for t in range(args.tsteps):
 while True:    
     # Sample directions
@@ -90,7 +91,7 @@ while True:
             break
 
 if args.exp:
-    g = open('data/hyperparam_tuning_results', 'a')
+    g = open('data/hyperparam_tuning_results_'+str(args.seed), 'a')
     x, y = env.reset()
     yhat = x.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
