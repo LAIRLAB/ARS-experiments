@@ -49,7 +49,7 @@ torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-env = MNIST(args.batch_size, args.test_batch_size)
+env = MNIST(args.num_directions, args.test_batch_size)
 
 class Net(nn.Module):
     def __init__(self):
@@ -107,6 +107,8 @@ while True:
     returns = np.zeros((2, args.num_directions))
     # mean and std
     mean, std = stats.mean, stats.std
+    # Get data
+    x_all, y_all = env.reset()
     for d in range(args.num_directions):
         for posneg in range(2):
             # Reconstruct params
@@ -114,7 +116,10 @@ while True:
             # Set params
             set_parameters(reconstructed_params)
             # Get data
-            x, y = env.reset()
+            # x, y = env.reset()
+            x, y = x_all[d], y_all[d]
+            x = x.view(1, 28, 28)
+            y = torch.Tensor(y)
             # Normalize input
             stats.push_batch(x)
             x = x.numpy().squeeze()
@@ -152,7 +157,7 @@ while True:
     correct = pred.eq(y.data.view_as(pred)).long().sum()
     accuracy = correct / args.test_batch_size
     if not args.exp:        
-        # print(env.get_num_accesses(), accuracy)
+        print(env.get_num_accesses(), accuracy)
         g.write(str(env.get_num_accesses())+','+str(accuracy)+'\n')
 
     # Check number of accesses for hyperparam tuning

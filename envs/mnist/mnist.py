@@ -26,7 +26,7 @@ class MNIST(gym.Env):
 
     def step(self, actions, test=False):
         if not test:
-            self.num_accesses += self.train_batch_size
+            self.num_accesses += actions.shape[0]
 
         rewards = actions == self.y
         rewards = rewards.type(torch.FloatTensor)
