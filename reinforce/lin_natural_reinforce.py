@@ -8,7 +8,7 @@ from utils.adam import Adam
 parser = argparse.ArgumentParser()
 parser.add_argument('--n_accesses', type=int, default=1000000)
 parser.add_argument('--tsteps', type=int, default=100)
-parser.add_argument('--lr', type=float, default=0.1)
+parser.add_argument('--lr', type=float, default=1e-2)
 parser.add_argument('--momentum', type=float, default=0.5)
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--input_dim', type=int, default=100)
@@ -35,7 +35,7 @@ while True:
     x, y = env.reset()
     pred = x.dot(w)
     mu_yhat = pred
-    std_yhat = 0.5  # 0.01
+    std_yhat = .5  # 0.01
     yhat = np.random.normal(mu_yhat, std_yhat)
     _, reward, _, _ = env.step(yhat)
     mse_loss = -np.mean(reward)
@@ -49,16 +49,16 @@ while True:
     descent_dir = np.linalg.lstsq(fim, grad, rcond=None)[0]
     lr = np.sqrt(fixed_lr / descent_dir.dot(grad))
     w = w - lr * descent_dir
-    fixed_lr = fixed_lr * 0.99
+    fixed_lr = fixed_lr *1. #0.99
 
     # Test
     x, y = env.reset(test=True)
     yhat = x.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
     loss = -np.mean(reward)
-    # print(t, env.get_num_accesses(), loss)
+    print(t, env.get_num_accesses(), loss)
 
-    g.write(str(env.get_num_acccesses())+','+str(loss)+'\n')
+    g.write(str(env.get_num_accesses())+','+str(loss)+'\n')
 
     # Check termination
     if env.get_num_accesses() >= args.n_accesses:
