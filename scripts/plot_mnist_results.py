@@ -3,8 +3,8 @@ import csv
 import numpy as np
 
 seeds = [5488, 7151, 6027, 5448, 4236, 6458, 4375, 8917, 9636, 3834]
-# exps = ['ars', 'reinforce', 'sgd', 'naturalreinforce', 'newton']
-exps = ['ars', 'reinforce', 'sgd']
+# exps = ['ars', 'reinforce', 'sgd']
+exps = ['reinforce', 'sgd']
 num_accesses = 1000000
 
 n_accesses = {}
@@ -48,6 +48,7 @@ for i, e in enumerate(exps):
     plt.plot(n_accesses[e][5488], meanresults[e], color=colors[i], label=e)
     plt.fill_between(n_accesses[e][5488], np.maximum(minresults[e], meanresults[e]-stdresults[e]), np.minimum(maxresults[e], meanresults[e]+stdresults[e]), facecolor=colors[i], alpha=0.2)
     # plt.errorbar(n_accesses[e][5488], meanresults[e], )
+
 
 plt.xlabel('Number of samples')
 plt.ylabel('Test accuracy')
