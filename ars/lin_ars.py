@@ -30,7 +30,7 @@ args = parser.parse_args()
 np.random.seed(args.seed)
 random.seed(args.seed)
 
-env = LinReg(args.input_dim, args.batch_size, args.test_batch_size)
+env = LinReg(args.input_dim, args.num_directions, args.test_batch_size)
 # optim = Adam(args.input_dim+1, args.lr)
 stats = RunningStat(args.input_dim+1)
 
@@ -49,11 +49,15 @@ while True:
     # mean and std
     mean = stats.mean
     std = stats.std
+    # Get data
+    x_all, y_all = env.reset()
     for d in range(args.num_directions):
         for posneg in range(2):
             wp = perturbed_ws[posneg, d]
             # Get data
-            x, y = env.reset()
+            # x, y = env.reset()
+            x, y = x_all[d], y_all[d]
+            x, y = x.reshape(1, -1), y.reshape(1, -1)
             # Normalize input
             stats.push_batch(x)
             x_norm = (x - mean) / std
