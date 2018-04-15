@@ -32,9 +32,9 @@ parser.add_argument('--seed', type=int, default=1, metavar='S',
 parser.add_argument('--log-interval', type=int, default=50, metavar='N',
                     help='how many batches to wait before logging training status')
 # ARS params
-parser.add_argument('--stepsize', type=float, default=0.005, help='Stepsize for ARS')
-parser.add_argument('--num_directions', type=int, default=10, help='Number of directions sampled for ARS')
-parser.add_argument('--num_top_directions', type=int, default=5, help='Number of top direction used for ARS')
+parser.add_argument('--stepsize', type=float, default=0.05, help='Stepsize for ARS')
+parser.add_argument('--num_directions', type=int, default=100, help='Number of directions sampled for ARS')
+parser.add_argument('--num_top_directions', type=int, default=20, help='Number of top direction used for ARS')
 parser.add_argument('--perturbation_length', type=float, default=0.1, help='Perturbation length for ARS')
 
 # Hyperparam tuning params
