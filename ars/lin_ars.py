@@ -8,22 +8,17 @@ from utils.ars import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--n_accesses', type=int, default=1000000)
-parser.add_argument('--tsteps', type=int, default=100)
-parser.add_argument('--lr', type=float, default=0.001)
-parser.add_argument('--momentum', type=float, default=0.5)
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--input_dim', type=int, default=100)
-parser.add_argument('--test_interval', type=int, default=10)
-parser.add_argument('--batch_size', type=int, default=1)
+parser.add_argument('--test_batch_size', type=int, default=1000)
 # ARS parameters
 parser.add_argument('--stepsize', type=float, default=0.02)
 parser.add_argument('--num_directions', type=int, default=50)
 parser.add_argument('--num_top_directions', type=int, default=10)
 parser.add_argument('--perturbation_length', type=float, default=0.01)
-parser.add_argument('--test_batch_size', type=int, default=1000)
 # Hyperparam tuning params
 parser.add_argument('--exp', action='store_true')
-parser.add_argument('--threshold', type=int, default=100000, help='Number of accesses after which performance is evaluated')
+parser.add_argument('--threshold', type=int, default=10000, help='Number of accesses after which performance is evaluated')
 
 args = parser.parse_args()
 
@@ -31,7 +26,6 @@ np.random.seed(args.seed)
 random.seed(args.seed)
 
 env = LinReg(args.input_dim, args.num_directions, args.test_batch_size)
-# optim = Adam(args.input_dim+1, args.lr)
 stats = RunningStat(args.input_dim+1)
 
 w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
@@ -39,7 +33,7 @@ w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 # Log file
 if not args.exp:
     g = open('data/linear-ars-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
-# for t in range(args.tsteps):
+
 while True:    
     # Sample directions
     directions = sample_directions(args.num_directions, args.input_dim+1)
@@ -53,15 +47,15 @@ while True:
     # Get data
     x_all, y_all = env.reset()
     for d in range(args.num_directions):
+        # Get data
+        x, y = x_all[d], y_all[d]
+        x, y = x.reshape(1, -1), y.reshape(1, -1)
+        # Normalize input
+        stats.push_batch(x)
+        x_norm = (x - mean) / std
         for posneg in range(2):
+            # Perturbed params
             wp = perturbed_ws[posneg, d]
-            # Get data
-            # x, y = env.reset()
-            x, y = x_all[d], y_all[d]
-            x, y = x.reshape(1, -1), y.reshape(1, -1)
-            # Normalize input
-            stats.push_batch(x)
-            x_norm = (x - mean) / std
             # Get predictions
             yhat = x_norm.dot(wp)
             _, reward, _, _ = env.step(yhat)
@@ -72,7 +66,6 @@ while True:
     w = update_parameters(w, args.stepsize, top_returns, top_directions)
 
     # Test
-    # for i in range(args.test_batch_size):
     x, y = env.reset(test=True)
     yhat = x.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
@@ -92,7 +85,7 @@ while True:
 
 if args.exp:
     g = open('data/hyperparam_tuning_results_'+str(args.seed), 'a')
-    x, y = env.reset()
+    x, y = env.reset(test=True)
     yhat = x.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
     loss = -np.mean(reward)
