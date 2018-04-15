@@ -34,15 +34,20 @@ for e in exps:
 
 meanresults = {}
 stdresults = {}
+maxresults = {}
+minresults = {}
 for e in exps:
     meanresults[e] = np.mean(results[e], axis=0)
     stdresults[e] = np.std(results[e], axis=0)
+    minresults[e] = np.amin(results[e], axis=0)
+    maxresults[e] = np.amax(results[e], axis=0)
 
 # Plotting
 colors = ['red', 'blue', 'green', 'cyan']
 for i, e in enumerate(exps):
     plt.plot(n_accesses[e][5488], meanresults[e], color=colors[i], label=e)
-    plt.fill_between(n_accesses[e][5488], meanresults[e]-stdresults[e], meanresults[e]+stdresults[e], facecolor=colors[i], alpha=0.2)
+    plt.fill_between(n_accesses[e][5488], np.maximum(minresults[e], meanresults[e]-stdresults[e]), np.minimum(maxresults[e], meanresults[e]+stdresults[e]), facecolor=colors[i], alpha=0.2)
+    # plt.errorbar(n_accesses[e][5488], meanresults[e], )
 
 plt.xlabel('Number of samples')
 plt.ylabel('Test accuracy')
