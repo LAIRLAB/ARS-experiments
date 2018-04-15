@@ -7,7 +7,7 @@ from utils.adam import Adam
 from utils.ars import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--n_accesses', type=int, default=100000)
+parser.add_argument('--n_accesses', type=int, default=1000000)
 parser.add_argument('--tsteps', type=int, default=100)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--momentum', type=float, default=0.5)
@@ -20,7 +20,7 @@ parser.add_argument('--stepsize', type=float, default=0.02)
 parser.add_argument('--num_directions', type=int, default=100)
 parser.add_argument('--num_top_directions', type=int, default=100)
 parser.add_argument('--perturbation_length', type=float, default=0.05)
-parser.add_argument('--test_batch_size', type=int, default=100)
+parser.add_argument('--test_batch_size', type=int, default=1000)
 # Hyperparam tuning params
 parser.add_argument('--exp', action='store_true')
 parser.add_argument('--threshold', type=int, default=100000, help='Number of accesses after which performance is evaluated')
@@ -30,7 +30,7 @@ args = parser.parse_args()
 np.random.seed(args.seed)
 random.seed(args.seed)
 
-env = LinReg(args.input_dim, args.batch_size)
+env = LinReg(args.input_dim, args.batch_size, args.test_batch_size)
 # optim = Adam(args.input_dim+1, args.lr)
 stats = RunningStat(args.input_dim+1)
 
@@ -67,16 +67,14 @@ while True:
     w = update_parameters(w, args.stepsize, top_returns, top_directions)
 
     # Test
-    mse_loss = 0.
-    for i in range(args.test_batch_size):
-        x, y = env.reset()
-        yhat = x.dot(w)
-        _, reward, _, _ = env.step(yhat, test=True)
-        loss = -reward[0]
-        mse_loss += loss
+    # for i in range(args.test_batch_size):
+    x, y = env.reset(test=True)
+    yhat = x.dot(w)
+    _, reward, _, _ = env.step(yhat, test=True)
+    mse_loss = -np.mean(reward)
     if not args.exp:        
-        # print(env.get_num_accesses(), mse_loss / args.test_batch_size)
-        g.write(str(env.get_num_accesses())+','+str(mse_loss / args.test_batch_size)+'\n')
+        # print(env.get_num_accesses(), mse_loss)
+        g.write(str(env.get_num_accesses())+','+str(mse_loss)+'\n')
 
     # Check termination
     if env.get_num_accesses() >= args.n_accesses:

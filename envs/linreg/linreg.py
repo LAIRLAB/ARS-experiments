@@ -4,10 +4,11 @@ import ipdb
 
 
 class LinReg(gym.Env):
-    def __init__(self, input_dim, batch_size):
+    def __init__(self, input_dim, batch_size, test_batch_size):
         super(LinReg, self).__init__()
         self.input_dim = input_dim
         self.batch_size = batch_size
+        self.test_batch_size = test_batch_size
         self.w = np.random.randn(self.input_dim+1) / np.sqrt(self.input_dim+1)
         self.num_accesses = 0
         self.reset()
@@ -21,8 +22,11 @@ class LinReg(gym.Env):
         # Obs returned is none, reward is -loss, done is always True and info is None
         return None, -loss, True, {'grad': grad}
 
-    def reset(self):
-        self.x = np.random.randn(self.batch_size, self.input_dim+1)
+    def reset(self, test=False):
+        if not test:            
+            self.x = np.random.randn(self.batch_size, self.input_dim+1)
+        else:
+            self.x = np.random.randn(self.test_batch_size, self.input_dim+1)
         # Bias term should be 1
         self.x[:, 0] = 1
         self.y = self.x.dot(self.w) + np.random.randn()*0.001

@@ -8,32 +8,34 @@ from utils.adam import Adam
 parser = argparse.ArgumentParser()
 parser.add_argument('--n_accesses', type=int, default=1000000)
 parser.add_argument('--tsteps', type=int, default=100)
-parser.add_argument('--lr', type=float, default=0.001)
+parser.add_argument('--lr', type=float, default=0.1)
 parser.add_argument('--momentum', type=float, default=0.5)
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--input_dim', type=int, default=100)
 parser.add_argument('--test_interval', type=int, default=10)
-parser.add_argument('--batch_size', type=int, default=100)
+parser.add_argument('--batch_size', type=int, default=512)
+parser.add_argument('--test_batch_size', type=int, default=1000)
 
 args = parser.parse_args()
 
 np.random.seed(args.seed)
 random.seed(args.seed)
 
-env = LinReg(args.input_dim, args.batch_size)
+env = LinReg(args.input_dim, args.batch_size, args.test_batch_size)
 optim = Adam(args.input_dim+1, args.lr)
 
 w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
 g = open('linear-naturalreinforce-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
 t = 0
+fixed_lr = args.lr
 while True:    
     # Training
     t = t + 1
     x, y = env.reset()
     pred = x.dot(w)
     mu_yhat = pred
-    std_yhat = 0.5 # 0.01
+    std_yhat = 0.5  # 0.01
     yhat = np.random.normal(mu_yhat, std_yhat)
     _, reward, _, _ = env.step(yhat)
     mse_loss = -np.mean(reward)
@@ -45,17 +47,18 @@ while True:
     fim *= (1./args.batch_size) # * (1./(std_yhat**2))
     fim += 1e-3 * np.eye(args.input_dim+1)
     descent_dir = np.linalg.lstsq(fim, grad, rcond=None)[0]
-    lr = np.sqrt(args.lr / descent_dir.dot(grad))
+    lr = np.sqrt(fixed_lr / descent_dir.dot(grad))
     w = w - lr * descent_dir
+    fixed_lr = fixed_lr * 0.99
 
     # Test
-    x, y = env.reset()
+    x, y = env.reset(test=True)
     yhat = x.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
     loss = -np.mean(reward)
-    print(t, env.get_num_accesses(), loss)
+    # print(t, env.get_num_accesses(), loss)
 
-    g.write(str(env.get_num_accesses())+','+str(loss)+'\n')
+    g.write(str(env.get_num_acccesses())+','+str(loss)+'\n')
 
     # Check termination
     if env.get_num_accesses() >= args.n_accesses:
