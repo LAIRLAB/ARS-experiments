@@ -26,12 +26,14 @@ optim = Adam(args.input_dim+1, args.lr)
 w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
 g = open('linear-naturalreinforce-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
+t = 0
 while True:    
     # Training
+    t = t + 1
     x, y = env.reset()
     pred = x.dot(w)
     mu_yhat = pred
-    std_yhat = 0.1 # 0.01
+    std_yhat = 0.5 # 0.01
     yhat = np.random.normal(mu_yhat, std_yhat)
     _, reward, _, _ = env.step(yhat)
     mse_loss = -np.mean(reward)
@@ -51,7 +53,7 @@ while True:
     yhat = x.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
     loss = -np.mean(reward)
-    # print(env.get_num_accesses(), loss)
+    print(t, env.get_num_accesses(), loss)
 
     g.write(str(env.get_num_accesses())+','+str(loss)+'\n')
 

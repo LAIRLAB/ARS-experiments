@@ -8,12 +8,12 @@ from utils.adam import Adam
 parser = argparse.ArgumentParser()
 parser.add_argument('--n_accesses', type=int, default=1000000)
 parser.add_argument('--tsteps', type=int, default=100)
-parser.add_argument('--lr', type=float, default=0.01)
+parser.add_argument('--lr', type=float, default=0.1)
 parser.add_argument('--momentum', type=float, default=0.5)
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--input_dim', type=int, default=100)
 parser.add_argument('--test_interval', type=int, default=10)
-parser.add_argument('--batch_size', type=int, default=64)
+parser.add_argument('--batch_size', type=int, default=100)
 
 args = parser.parse_args()
 
@@ -37,7 +37,8 @@ while True:
     _, reward, _, _ = env.step(yhat)
     mse_loss = -np.mean(reward)
     grad = -(1./args.batch_size) * (x.T.dot(reward*(yhat - mu_yhat))) #* (1./(std_yhat**2))
-    w = optim.update(w, grad)
+    #w = optim.update(w, grad)
+    w = w - args.lr*grad
 
     # Test
     x, y = env.reset()
@@ -45,7 +46,7 @@ while True:
     _, reward, _, _ = env.step(yhat, test=True)
     mse_loss = -np.mean(reward)
 
-    # print "mse_loss: {}".format(mse_loss)
+    print "mse_loss: {}".format(mse_loss)
         
     # print(env.get_num_accesses(), loss)
     g.write(str(env.get_num_accesses())+','+str(mse_loss)+'\n')
