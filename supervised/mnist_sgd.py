@@ -13,9 +13,10 @@ import ipdb
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
+parser.add_argument('--n_accesses', type=int, default=1000000)
 parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                     help='input batch size for training (default: 64)')
-parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
+parser.add_argument('--test-batch-size', type=int, default=10000, metavar='N',
                     help='input batch size for testing (default: 1000)')
 parser.add_argument('--tsteps', type=int, default=100, metavar='N',
                     help='number of epochs to train (default: 10)')
@@ -65,7 +66,8 @@ if args.cuda:
 
 optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
-for t in range(args.tsteps):
+while True:    
+# for t in range(args.tsteps):
     # Training
     model.train()
     x, y = env.reset()
@@ -93,3 +95,6 @@ for t in range(args.tsteps):
     correct = pred.eq(y.data.view_as(pred)).long().sum()
     accuracy = correct / args.test_batch_size
     print(env.get_num_accesses(), accuracy)
+
+    if env.get_num_accesses() >= args.n_accesses:
+        break
