@@ -23,7 +23,7 @@ class LinReg(gym.Env):
 
     def step(self, yhat, test=False):
         if not test:            
-            self.num_accesses += self.batch_size
+            self.num_accesses += yhat.shape[0] # self.batch_size
         # Compute squared loss
         loss = ((yhat - self.y)**2) * (1./2)
         grad = (1./self.batch_size) * self.x.T.dot(yhat - self.y)
