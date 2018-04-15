@@ -87,11 +87,9 @@ while True:
 
 if args.exp:
     g = open('data/hyperparam_tuning_results', 'a')
-    mse_loss = 0.
-    for i in range(args.test_batch_size):
-        x, y = env.reset()
-        yhat = x.dot(w)
-        _, reward, _, _ = env.step(yhat, test=True)
-        loss = -reward[0]
-        mse_loss += loss
-    g.write(str(args.stepsize)+','+str(args.num_directions)+','+str(args.num_top_directions)+','+str(args.perturbation_length)+','+str(mse_loss / args.test_batch_size)+'\n')
+    x, y = env.reset()
+    yhat = x.dot(w)
+    _, reward, _, _ = env.step(yhat, test=True)
+    loss = -np.mean(reward)
+    mse_loss = loss
+    g.write(str(args.stepsize)+','+str(args.num_directions)+','+str(args.num_top_directions)+','+str(args.perturbation_length)+','+str(mse_loss)+'\n')
