@@ -65,7 +65,9 @@ if args.cuda:
     model.cuda()
 
 optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.999)
 
+g = open('data/mnist-sgd-'+str(args.seed)+'.csv', 'w')
 while True:    
 # for t in range(args.tsteps):
     # Training
@@ -81,6 +83,7 @@ while True:
     loss = F.nll_loss(output, y)
     loss.backward()
     optimizer.step()
+    scheduler.step()
 
 
     # Test
@@ -94,7 +97,8 @@ while True:
     pred = output.data.max(1, keepdim=True)[1]
     correct = pred.eq(y.data.view_as(pred)).long().sum()
     accuracy = correct / args.test_batch_size
-    print(env.get_num_accesses(), accuracy)
+    # print(env.get_num_accesses(), accuracy)
+    g.write(str(env.get_num_accesses())+','+str(accuracy)+'\n')
 
     if env.get_num_accesses() >= args.n_accesses:
         break
