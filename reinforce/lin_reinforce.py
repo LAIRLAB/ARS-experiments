@@ -51,7 +51,7 @@ while True:
     mse_loss = -np.mean(reward)
 
     # print "mse_loss: {}".format(mse_loss)
-    print(env.get_num_accesses(), mse_loss)
+    # print(env.get_num_accesses(), mse_loss)
         
     # print(env.get_num_accesses(), loss)
     g.write(str(env.get_num_accesses())+','+str(mse_loss)+'\n')

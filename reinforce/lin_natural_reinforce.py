@@ -49,14 +49,13 @@ while True:
     descent_dir = np.linalg.lstsq(fim, grad, rcond=None)[0]
     lr = np.sqrt(fixed_lr / descent_dir.dot(grad))
     w = w - lr * descent_dir
-    fixed_lr = fixed_lr *1. #0.99
 
     # Test
     x, y = env.reset(test=True)
     yhat = x.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
     loss = -np.mean(reward)
-    print(t, env.get_num_accesses(), loss)
+    # print(t, env.get_num_accesses(), loss)
 
     g.write(str(env.get_num_accesses())+','+str(loss)+'\n')
 

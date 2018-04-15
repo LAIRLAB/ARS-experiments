@@ -38,7 +38,7 @@ while True:
     grad = info['grad']
     # w = optim.update(w, grad)
     w = w - lr * grad
-    lr = lr * 0.99
+    # lr = lr * 0.99
 
     # Test
     x, y = env.reset(test=True)
