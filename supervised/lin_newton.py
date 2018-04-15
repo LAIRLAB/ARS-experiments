@@ -26,7 +26,7 @@ optim = Adam(args.input_dim+1, args.lr)
 
 w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
-g = open('linear-newton-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
+g = open('data/linear-newton-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
 lr = args.lr
 while True:    
 # for t in range(args.tsteps):

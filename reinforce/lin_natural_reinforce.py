@@ -26,7 +26,7 @@ optim = Adam(args.input_dim+1, args.lr)
 
 w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
-g = open('linear-naturalreinforce-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
+g = open('data/linear-naturalreinforce-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
 t = 0
 fixed_lr = args.lr
 while True:    
