@@ -1,8 +1,8 @@
 #!/bin/bash
-stepsizes=(0.1 0.08 0.05 0.02 0.01 0.008 0.005 0.002 0.001 0.0005 0.0001)
+stepsizes=(0.1 0.08 0.05 0.02 0.01 0.008 0.005 0.002 0.001)
 numdirections=(10 50 100 200 300 500)
 # numdirections=(50)
-pertubationlengths=(0.1 0.07 0.05 0.03 0.01 0.007 0.005 0.003 0.001 0.0005 0.0001)
+pertubationlengths=(0.1 0.08 0.05 0.02 0.01 0.008 0.005 0.002 0.001)
 numtopdirections=(1 5 10 20 50 100 200 300 500)
 
 for s in ${stepsizes[@]}
