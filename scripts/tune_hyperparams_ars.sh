@@ -17,7 +17,7 @@ do
         then
           continue
         else
-          python -m ars.lin_ars --tsteps=100000 --exp --stepsize=$s --num_directions=$nd --perturbation_length=$pl --num_top_directions=$ntd
+          python -m ars.lin_ars --exp --stepsize=$s --num_directions=$nd --perturbation_length=$pl --num_top_directions=$ntd
         fi
       done
     done
