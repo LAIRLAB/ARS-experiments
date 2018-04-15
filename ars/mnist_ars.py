@@ -93,6 +93,7 @@ stats = RunningStat(shape=[28, 28])
 if args.cuda:
     model.cuda()
 
+g = open('data/mnist-ars-'+str(args.seed)+'.csv', 'w')
 while True:    
 # for t in range(args.tsteps):
     # Get parameters of the model and flatten them
@@ -151,7 +152,8 @@ while True:
     correct = pred.eq(y.data.view_as(pred)).long().sum()
     accuracy = correct / args.test_batch_size
     if not args.exp:        
-        print(env.get_num_accesses(), accuracy)
+        # print(env.get_num_accesses(), accuracy)
+        g.write(str(env.get_num_accesses())+','+str(accuracy)+'\n')
 
     # Check number of accesses for hyperparam tuning
     if args.exp:

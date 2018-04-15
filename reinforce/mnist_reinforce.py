@@ -67,6 +67,7 @@ if args.cuda:
 # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
+g = open('data/mnist-reinforce-'+str(args.seed)+'.csv', 'w')
 while True:    
 # for t in range(args.tsteps):
     # Training
@@ -103,7 +104,8 @@ while True:
     pred = output.data.max(1, keepdim=True)[1]
     correct = pred.eq(y.data.view_as(pred)).long().sum()
     accuracy = correct / args.test_batch_size
-    print(env.get_num_accesses(), accuracy)
+    # print(env.get_num_accesses(), accuracy)
+    g.write(str(env.get_num_accesses())+','+str(accuracy)+'\n')
 
     if env.get_num_accesses() >= args.n_accesses:
         break
