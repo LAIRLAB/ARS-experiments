@@ -93,7 +93,8 @@ stats = RunningStat(shape=[28, 28])
 if args.cuda:
     model.cuda()
 
-g = open('data/mnist-ars-'+str(args.seed)+'.csv', 'w')
+if not args.exp:
+    g = open('data/mnist-ars-'+str(args.seed)+'.csv', 'w')
 while True:    
 # for t in range(args.tsteps):
     # Get parameters of the model and flatten them
@@ -169,7 +170,7 @@ while True:
             break
 
 if args.exp:
-    g = open('data/hyperparam_tuning_results_mnist', 'a')
+    g = open('data/hyperparam_tuning_results_mnist_'+str(args.seed), 'a')
     model.eval()
     x, y = env.reset(test=True)
     x = x.view(args.test_batch_size, 1, 28, 28)
