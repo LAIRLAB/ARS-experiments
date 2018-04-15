@@ -17,9 +17,9 @@ parser.add_argument('--test_interval', type=int, default=10)
 parser.add_argument('--batch_size', type=int, default=1)
 # ARS parameters
 parser.add_argument('--stepsize', type=float, default=0.02)
-parser.add_argument('--num_directions', type=int, default=100)
-parser.add_argument('--num_top_directions', type=int, default=100)
-parser.add_argument('--perturbation_length', type=float, default=0.05)
+parser.add_argument('--num_directions', type=int, default=50)
+parser.add_argument('--num_top_directions', type=int, default=10)
+parser.add_argument('--perturbation_length', type=float, default=0.01)
 parser.add_argument('--test_batch_size', type=int, default=1000)
 # Hyperparam tuning params
 parser.add_argument('--exp', action='store_true')
