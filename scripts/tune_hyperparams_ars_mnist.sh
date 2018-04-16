@@ -19,7 +19,7 @@ do
                 else
 		    for sd in ${seeds[@]}
 		    do
-			python -m ars.mnist_ars --tsteps=100000 --exp --stepsize=$s --num_directions=$nd --perturbation_length=$pl --num_top_directions=$ntd --seed=$sd &
+			python -m ars.mnist_ars --exp --stepsize=$s --num_directions=$nd --perturbation_length=$pl --num_top_directions=$ntd --seed=$sd &
 		    done      
 		    wait
                 fi
