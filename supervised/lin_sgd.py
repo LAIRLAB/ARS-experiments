@@ -36,8 +36,8 @@ while True:
     _, reward, _, info = env.step(yhat)
     loss = -np.mean(reward)
     grad = info['grad']
-    # w = optim.update(w, grad)
-    w = w - lr * grad
+    w = optim.update(w, grad)
+    # w = w - lr * grad
     # lr = lr * 0.99
 
     # Test
@@ -45,7 +45,7 @@ while True:
     yhat = x.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
     loss = -np.mean(reward)
-    # print(env.get_num_accesses(), loss)
+    print(env.get_num_accesses(), loss)
 
     g.write(str(env.get_num_accesses())+','+str(loss)+'\n')
 
