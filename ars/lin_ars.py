@@ -12,9 +12,9 @@ parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--input_dim', type=int, default=100)
 parser.add_argument('--test_batch_size', type=int, default=1000)
 # ARS parameters
-parser.add_argument('--stepsize', type=float, default=0.02)
-parser.add_argument('--num_directions', type=int, default=50)
-parser.add_argument('--num_top_directions', type=int, default=10)
+parser.add_argument('--stepsize', type=float, default=0.01)
+parser.add_argument('--num_directions', type=int, default=100)
+parser.add_argument('--num_top_directions', type=int, default=100)
 parser.add_argument('--perturbation_length', type=float, default=0.01)
 # Hyperparam tuning params
 parser.add_argument('--exp', action='store_true')
@@ -26,7 +26,7 @@ np.random.seed(args.seed)
 random.seed(args.seed)
 
 env = LinReg(args.input_dim, args.num_directions, args.test_batch_size)
-stats = RunningStat(args.input_dim+1)
+stats = RunningStat(args.input_dim)
 
 w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
@@ -42,24 +42,26 @@ while True:
     # Returns
     returns = np.zeros((2, args.num_directions))
     # mean and std
-    mean = stats.mean
-    std = stats.std
+    mean = stats.mean.copy()
+    std = stats.std.copy()
     # Get data
     x_all, y_all = env.reset()
     for d in range(args.num_directions):
         # Get data
-        x, y = x_all[d], y_all[d]
+        x, y = x_all[d].copy(), y_all[d].copy()
         x, y = x.reshape(1, -1), y.reshape(1, -1)
         # Normalize input
-        stats.push_batch(x)
-        x_norm = (x - mean) / std
+        stats.push_batch(x[:, 1:])
+        x_norm = x.copy()
+        x_norm[:, 0] = x[:, 0]
+        x_norm[:, 1:] = (x[:, 1:] - mean) / std
         for posneg in range(2):
             # Perturbed params
             wp = perturbed_ws[posneg, d]
             # Get predictions
             yhat = x_norm.dot(wp)
             _, reward, _, _ = env.step(yhat)
-            returns[posneg, d] = reward[0]
+            returns[posneg, d] = reward[d]
     # Get top directions and top returns
     top_directions, top_returns = get_top_directions_returns(returns.T, directions, args.num_top_directions)
     # Update params
@@ -67,11 +69,14 @@ while True:
 
     # Test
     x, y = env.reset(test=True)
-    yhat = x.dot(w)
+    x_norm = x.copy()
+    x_norm[:, 0] = x[:, 0]
+    x_norm[:, 1:] = (x[:, 1:] - stats.mean) / stats.std
+    yhat = x_norm.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
     mse_loss = -np.mean(reward)
     if not args.exp:        
-        # print(env.get_num_accesses(), mse_loss)
+        print(env.get_num_accesses(), mse_loss)
         g.write(str(env.get_num_accesses())+','+str(mse_loss)+'\n')
 
     # Check termination

@@ -107,7 +107,8 @@ class RunningStat(object):
             delta = x - self._M
             self._M[...] += delta / self._n
             delta2 = x - self._M
-            self._S[...] += delta * delta2
+            # self._S[...] += delta * delta2
+            self._S[...] += delta * delta * n1 / self._n
 
     @property
     def n(self):
@@ -115,7 +116,7 @@ class RunningStat(object):
 
     @property
     def mean(self):
-        return self._M if self._n > 1 else 0.0
+        return self._M # if self._n > 1 else 0.0
 
     @property
     def var(self):
