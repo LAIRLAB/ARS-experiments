@@ -1,14 +1,10 @@
-##
-# @file   LQG.py
-# @author Yibo Lin
-# @date   Apr 2018
-#
 
 import numpy as np
 import gym 
 import gym.spaces.box as gym_box
 from gym import utils
 import scipy.linalg as LA
+#from IPython import embed
 #from gym.envs.registration import register
 
 
@@ -79,6 +75,13 @@ def finite_LQR_solver(A,B,Q,R,T, x_0,Cov_0, noise_cov):
 
     return x_0.dot(P).dot(x_0) + np.trace(Cov_0.dot(P))
 
+def finite_K_cost(A, B, Q, R, K, T, x_0, Cov_0):
+    x_dim = A.shape[0]
+    a_dim = B.shape[1]
+    P = np.zeros((x_dim,x_dim))
+    for i in range(T):
+        P = Q + K.T.dot(R).dot(K) + (A + B.dot(K)).T.dot(P).dot(A+B.dot(K))
+    return x_0.dot(P).dot(x_0) + np.trace(Cov_0.dot(P))
 
 #class LinearQuadGausEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 class LQGEnv(gym.Env):
@@ -108,8 +111,8 @@ class LQGEnv(gym.Env):
         self.observation_space = gym_box.Box(low = -np.inf, high = np.inf, shape = (x_dim, ))
         self.action_space = gym_box.Box(low = -np.inf, high = np.inf, shape = (u_dim, ))
 
-        self.init_state_mean = np.ones(self.x_dim)*2
-        self.init_state_cov = np.eye(self.x_dim)*0.1
+        self.init_state_mean = np.ones(self.x_dim)*10/np.sqrt(self.x_dim)
+        self.init_state_cov = np.eye(self.x_dim)*0.1/self.x_dim
 
         self.state = None
         self.noise_cov = np.eye(self.x_dim)*0.0001
@@ -144,3 +147,14 @@ class LQGEnv(gym.Env):
 
     def render(self, mode='human', close=False):
         pass 
+
+    def evaluate_policy(self, K):
+        cost_for_K = finite_K_cost(self.A,self.B,self.Q, self.R, K, 
+            self.T, self.init_state_mean, 
+            self.init_state_cov)
+        
+        #cost_finite_K(self.A, self.B, self.Q, self.R, 
+        #    self.init_state_mean, self.T, K)
+        return cost_for_K    
+
+
