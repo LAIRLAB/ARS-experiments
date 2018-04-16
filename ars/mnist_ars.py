@@ -92,7 +92,7 @@ while True:
     # Returns
     returns = np.zeros((2, args.num_directions))
     # mean and std
-    mean, std = stats.mean, stats.std
+    mean, std = stats.mean.copy(), stats.std.copy()
     # Get data
     x_all, y_all = env.reset()
     for d in range(args.num_directions):
@@ -102,25 +102,25 @@ while True:
         y = torch.Tensor(y)
         # Normalize input
         stats.push_batch(x)
-        x = x.numpy().squeeze()
-        x = torch.Tensor((x - mean) / std)
-        x = x.view(1, 1, 28, 28)
+        x_norm = x.numpy().squeeze().copy()
+        x_norm = torch.Tensor((x_norm - mean) / std)
+        x_norm = x_norm.view(1, 1, 28, 28)
         if args.cuda:
-            x, y = x.cuda(), y.cuda()
-        x, y = Variable(x), Variable(y)
+            x_norm, y = x_norm.cuda(), y.cuda()
+        x_norm, y = Variable(x_norm), Variable(y)
         for posneg in range(2):
             # Reconstruct params
             reconstructed_params = reconstruct_params(perturbed_params[posneg, d, :], param_shapes, param_num_elements)
             # Set params
             set_parameters(reconstructed_params)
-            output = model(x)
+            output = model(x_norm)
             disb = torch.distributions.Categorical(output)
             actions = disb.sample()
             if args.cuda:
                 _, rewards, _, _ = env.step(actions.cpu().data)
             else:
                 _, rewards, _, _ = env.step(actions.data)
-            returns[posneg, d] = np.mean(rewards.numpy())
+            returns[posneg, d] = rewards.numpy()[d]
     # Get top directions and returns
     top_directions, top_returns = get_top_directions_returns(returns.T, directions, args.num_top_directions)
     # Update params
@@ -133,16 +133,18 @@ while True:
     # Test
     model.eval()
     x, y = env.reset(test=True)
-    x = x.view(args.test_batch_size, 1, 28, 28)
+    x_norm = x.numpy().copy()
+    x_norm =  torch.Tensor((x_norm - stats.mean) / stats.std)    
+    x_norm = x_norm.view(args.test_batch_size, 1, 28, 28)
     if args.cuda:
-        x, y = x.cuda(), y.cuda()
-    x, y = Variable(x, volatile=True), Variable(y, volatile=True)
-    output = model(x)
+        x_norm, y = x_norm.cuda(), y.cuda()
+    x_norm, y = Variable(x_norm, volatile=True), Variable(y, volatile=True)
+    output = model(x_norm)
     pred = output.data.max(1, keepdim=True)[1]
     correct = pred.eq(y.data.view_as(pred)).long().sum()
     accuracy = correct / args.test_batch_size
     if not args.exp:        
-        # print(env.get_num_accesses(), accuracy)
+        print(env.get_num_accesses(), accuracy)
         g.write(str(env.get_num_accesses())+','+str(accuracy)+'\n')
 
     # Check number of accesses for hyperparam tuning
@@ -157,11 +159,13 @@ if args.exp:
     g = open('data/hyperparam_tuning_results_mnist_'+str(args.seed), 'a')
     model.eval()
     x, y = env.reset(test=True)
-    x = x.view(args.test_batch_size, 1, 28, 28)
+    x_norm = x.numpy().copy()
+    x_norm =  torch.Tensor((x_norm - stats.mean) / stats.std) 
+    x_norm = x_norm.view(args.test_batch_size, 1, 28, 28)
     if args.cuda:
-        x, y = x.cuda(), y.cuda()
-    x, y = Variable(x, volatile=True), Variable(y, volatile=True)
-    output = model(x)
+        x_norm, y = x_norm.cuda(), y.cuda()
+    x_norm, y = Variable(x_norm, volatile=True), Variable(y, volatile=True)
+    output = model(x_norm)
     pred = output.data.max(1, keepdim=True)[1]
     correct = pred.eq(y.data.view_as(pred)).long().sum()
     accuracy = correct / args.test_batch_size
