@@ -101,8 +101,8 @@ while True:
         x = x.view(1, 28, 28)
         y = torch.Tensor(y)
         # Normalize input
-        stats.push_batch(x)
-        x_norm = x.numpy().squeeze().copy()
+        stats.push_batch(x.numpy())
+        x_norm = x.numpy().copy()
         x_norm = torch.Tensor((x_norm - mean) / std)
         x_norm = x_norm.view(1, 1, 28, 28)
         if args.cuda:
