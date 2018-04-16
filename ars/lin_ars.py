@@ -53,7 +53,6 @@ while True:
         # Normalize input
         stats.push_batch(x[:, 1:])
         x_norm = x.copy()
-        x_norm[:, 0] = x[:, 0]
         x_norm[:, 1:] = (x[:, 1:] - mean) / std
         for posneg in range(2):
             # Perturbed params
@@ -70,7 +69,6 @@ while True:
     # Test
     x, y = env.reset(test=True)
     x_norm = x.copy()
-    x_norm[:, 0] = x[:, 0]
     x_norm[:, 1:] = (x[:, 1:] - stats.mean) / stats.std
     yhat = x_norm.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
@@ -91,7 +89,9 @@ while True:
 if args.exp:
     g = open('data/hyperparam_tuning_results_'+str(args.seed), 'a')
     x, y = env.reset(test=True)
-    yhat = x.dot(w)
+    x_norm = x.copy()
+    x_norm[:, 1:] = (x[:, 1:] - stats.mean) / stats.std
+    yhat = x_norm.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
     loss = -np.mean(reward)
     mse_loss = loss
