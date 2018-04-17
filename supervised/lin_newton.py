@@ -15,6 +15,7 @@ parser.add_argument('--input_dim', type=int, default=100)
 parser.add_argument('--test_interval', type=int, default=10)
 parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--test_batch_size', type=int, default=1000)
+parser.add_argument('--verbose', action='store_true')
 
 args = parser.parse_args()
 
@@ -51,7 +52,8 @@ while True:
     yhat = x.dot(w)
     _, reward, _, _ = env.step(yhat, test=True)
     loss = -np.mean(reward)
-    # print(env.get_num_accesses(), loss)
+    if args.verbose:        
+        print(env.get_num_accesses(), loss)
 
     g.write(str(env.get_num_accesses())+','+str(loss)+'\n')
 
