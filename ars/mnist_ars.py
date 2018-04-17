@@ -21,10 +21,10 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 # ARS params
-parser.add_argument('--stepsize', type=float, default=0.05, help='Stepsize for ARS')
+parser.add_argument('--stepsize', type=float, default=0.02, help='Stepsize for ARS')
 parser.add_argument('--num_directions', type=int, default=50, help='Number of directions sampled for ARS')
-parser.add_argument('--num_top_directions', type=int, default=10, help='Number of top direction used for ARS')
-parser.add_argument('--perturbation_length', type=float, default=0.05, help='Perturbation length for ARS')
+parser.add_argument('--num_top_directions', type=int, default=20, help='Number of top direction used for ARS')
+parser.add_argument('--perturbation_length', type=float, default=0.03, help='Perturbation length for ARS')
 # Hyperparam tuning params
 parser.add_argument('--exp', action='store_true')
 parser.add_argument('--threshold', type=int, default=100000)
