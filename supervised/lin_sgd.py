@@ -37,8 +37,8 @@ while True:
     _, reward, _, info = env.step(yhat)
     loss = -np.mean(reward)
     grad = info['grad']
-    w = optim.update(w, grad)
-    # w = w - lr * grad
+    # w = optim.update(w, grad)
+    w = w - lr * grad
     # lr = lr * 0.99
 
     # Test

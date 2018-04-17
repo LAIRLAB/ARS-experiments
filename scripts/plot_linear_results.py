@@ -3,9 +3,9 @@ import csv
 import numpy as np
 
 seeds = [5488, 7151, 6027, 5448, 4236, 6458, 4375, 8917, 9636, 3834]
-# exps = ['ars', 'reinforce', 'sgd', 'naturalreinforce', 'newton']
-exps = ['ars', 'reinforce', 'sgd']
-num_accesses = 1000000
+exps = ['ars', 'reinforce', 'sgd', 'naturalreinforce', 'newton']
+# exps = ['ars', 'reinforce', 'sgd']
+num_accesses = 200000
 
 n_accesses = {}
 losses = {}
@@ -43,12 +43,14 @@ for e in exps:
     maxresults[e] = np.amax(results[e], axis=0)
 
 # Plotting
-colors = ['red', 'blue', 'green', 'cyan']
+colors = ['red', 'blue', 'green', 'cyan', 'magenta']
 for i, e in enumerate(exps):
     plt.plot(n_accesses[e][5488], meanresults[e], color=colors[i], label=e)
     plt.fill_between(n_accesses[e][5488], np.maximum(minresults[e], meanresults[e]-stdresults[e]), np.minimum(maxresults[e], meanresults[e]+stdresults[e]), facecolor=colors[i], alpha=0.2)
 
+plt.xlim([0, num_accesses])
 plt.xlabel('Number of samples')
 plt.ylabel('Test squared loss')
+plt.title('Linear regression with input dimensionality 100')
 plt.legend()
 plt.show()

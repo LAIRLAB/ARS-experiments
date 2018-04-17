@@ -28,15 +28,15 @@ np.random.seed(args.seed)
 random.seed(args.seed)
 
 env = LinReg(args.input_dim, args.num_directions, args.test_batch_size)
-stats = RunningStat(args.input_dim)
 
 w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
+stats = RunningStat(args.input_dim)
 # Log file
 if not args.exp:
     g = open('data/linear-ars-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
 
-while True:    
+while True:
     # Sample directions
     directions = sample_directions(args.num_directions, args.input_dim+1)
     # Perturb parameters
