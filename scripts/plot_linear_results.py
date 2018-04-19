@@ -3,9 +3,10 @@ import csv
 import numpy as np
 
 seeds = [5488, 7151, 6027, 5448, 4236, 6458, 4375, 8917, 9636, 3834]
-exps = ['ars', 'reinforce', 'sgd', 'naturalreinforce', 'newton']
-# exps = ['ars', 'reinforce', 'sgd']
-num_accesses = 200000
+# exps = ['ars', 'reinforce', 'sgd', 'naturalreinforce', 'newton']
+exps = ['ars', 'reinforce', 'sgd']
+
+num_accesses = 300000
 
 n_accesses = {}
 losses = {}
@@ -15,7 +16,7 @@ for e in exps:
     
 for e in exps:
     for s in seeds:
-        filename = 'data/linear-'+e+'-'+str(s)+'-100.csv'
+        filename = 'data/linear-'+e+'-'+str(s)+'-1000.csv'
         losses[e][s] = []
         n_accesses[e][s] = []
         with open(filename, 'r') as csvfile:
@@ -51,6 +52,6 @@ for i, e in enumerate(exps):
 plt.xlim([0, num_accesses])
 plt.xlabel('Number of samples')
 plt.ylabel('Test squared loss')
-plt.title('Linear regression with input dimensionality 100')
+plt.title('Linear regression with input dimensionality 1000')
 plt.legend()
 plt.show()
