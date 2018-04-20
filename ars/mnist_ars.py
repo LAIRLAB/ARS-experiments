@@ -1,3 +1,7 @@
+'''
+Augmented random search for MNIST
+Author: Anirudh Vemula
+'''
 from __future__ import print_function
 import argparse
 import torch
@@ -12,8 +16,8 @@ import numpy as np
 import random
 import ipdb
 
-# Training settings
 parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
+# Experiment parameters
 parser.add_argument('--n_accesses', type=int, default=1000000)
 parser.add_argument('--test-batch-size', type=int, default=10000)
 parser.add_argument('--no-cuda', action='store_true', default=False,
@@ -28,17 +32,23 @@ parser.add_argument('--perturbation_length', type=float, default=0.03, help='Per
 # Hyperparam tuning params
 parser.add_argument('--exp', action='store_true')
 parser.add_argument('--threshold', type=int, default=100000)
+# Debug params
+parser.add_argument('--verbose', action='store_true')
+
+# Parse arguments
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
-
+# Set random seeds
 np.random.seed(args.seed)
 random.seed(args.seed)
 torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
+# Initialize env
 env = MNIST(args.num_directions, args.test_batch_size)
 
+# Define model
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -56,17 +66,21 @@ class Net(nn.Module):
         x = self.fc2(x)
         return F.softmax(x, dim=1)
 
+# Initialize model
 model = Net()
 
+# Get parameter details
 param_shapes = [x.data.numpy().shape for x in model.parameters()]
 param_num_elements = [np.prod(x) for x in param_shapes]
 num_params = np.sum(param_num_elements)
 
+# Function to retrieve parameters of the model
 def get_parameters(m):
     if args.cuda:
         return [x.cpu().data.numpy() for x in m.parameters()]
     return [x.data.numpy() for x in m.parameters()]
 
+# Function to set the parameters of the model
 def set_parameters(params):
     for ind_param, param in enumerate(model.parameters()):
         if args.cuda:
@@ -74,13 +88,17 @@ def set_parameters(params):
         else:
             param.data = torch.Tensor(params[ind_param])
 
+# Initialize stats
 stats = RunningStat(shape=[28, 28])
 
 if args.cuda:
     model.cuda()
 
+# Log file
 if not args.exp:
     g = open('data/mnist-ars-'+str(args.seed)+'.csv', 'w')
+
+# Start
 while True:    
     # Get parameters of the model and flatten them
     params = get_parameters(model)
@@ -108,14 +126,18 @@ while True:
         if args.cuda:
             x_norm, y = x_norm.cuda(), y.cuda()
         x_norm, y = Variable(x_norm), Variable(y)
+        # For both +ve and -ve directions
         for posneg in range(2):
             # Reconstruct params
             reconstructed_params = reconstruct_params(perturbed_params[posneg, d, :], param_shapes, param_num_elements)
             # Set params
             set_parameters(reconstructed_params)
             output = model(x_norm)
+            # Define categorical distribution over softmax output
             disb = torch.distributions.Categorical(output)
+            # Sample actions from the categorical distribution
             actions = disb.sample()
+            # Get rewards
             if args.cuda:
                 _, rewards, _, _ = env.step(actions.cpu().data)
             else:
@@ -140,11 +162,14 @@ while True:
         x_norm, y = x_norm.cuda(), y.cuda()
     x_norm, y = Variable(x_norm, volatile=True), Variable(y, volatile=True)
     output = model(x_norm)
+    # Get predictions of the model
     pred = output.data.max(1, keepdim=True)[1]
+    # Compute accuracy
     correct = pred.eq(y.data.view_as(pred)).long().sum()
     accuracy = correct / args.test_batch_size
-    if not args.exp:        
-        # print(env.get_num_accesses(), accuracy)
+    if not args.exp:
+        if verbose:            
+            print(env.get_num_accesses(), accuracy)
         g.write(str(env.get_num_accesses())+','+str(accuracy)+'\n')
 
     # Check number of accesses for hyperparam tuning
@@ -155,6 +180,7 @@ while True:
         if env.get_num_accesses() >= args.n_accesses:
             break
 
+# For hyperparam tuning
 if args.exp:
     g = open('data/hyperparam_tuning_results_mnist_'+str(args.seed), 'a')
     model.eval()

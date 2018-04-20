@@ -1,3 +1,7 @@
+'''
+Augmented random search for Linear Regression
+Author: Anirudh Vemula
+'''
 import argparse
 import numpy as np
 import random
@@ -7,6 +11,7 @@ from utils.adam import Adam
 from utils.ars import *
 
 parser = argparse.ArgumentParser()
+# Experiment parameters
 parser.add_argument('--n_accesses', type=int, default=1000000)
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--input_dim', type=int, default=100)
@@ -19,23 +24,30 @@ parser.add_argument('--perturbation_length', type=float, default=0.03)
 # Hyperparam tuning params
 parser.add_argument('--exp', action='store_true')
 parser.add_argument('--threshold', type=int, default=100000, help='Number of accesses after which performance is evaluated')
-
+# Debug parameters
 parser.add_argument('--verbose', action='store_true')
 
+# Parse arguments
 args = parser.parse_args()
 
+# Set random seed
 np.random.seed(args.seed)
 random.seed(args.seed)
 
+# Initialize environment
 env = LinReg(args.input_dim, args.num_directions, args.test_batch_size)
 
+# Initialize parameters
 w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
+# Initialize stats
 stats = RunningStat(args.input_dim)
+
 # Log file
 if not args.exp:
     g = open('data/linear-ars-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
 
+# Start
 while True:
     # Sample directions
     directions = sample_directions(args.num_directions, args.input_dim+1)
@@ -56,11 +68,13 @@ while True:
         stats.push_batch(x[:, 1:])
         x_norm = x.copy()
         x_norm[:, 1:] = (x[:, 1:] - mean) / std
+        # For both +ve and -ve direction
         for posneg in range(2):
             # Perturbed params
             wp = perturbed_ws[posneg, d]
             # Get predictions
             yhat = x_norm.dot(wp)
+            # Compute reward
             _, reward, _, _ = env.step(yhat)
             returns[posneg, d] = reward[d]
     # Get top directions and top returns
@@ -89,6 +103,7 @@ while True:
         if env.get_num_accesses() > args.threshold:
             break
 
+# For hyperparam tuning
 if args.exp:
     g = open('data/hyperparam_tuning_results_'+str(args.seed), 'a')
     x, y = env.reset(test=True)
