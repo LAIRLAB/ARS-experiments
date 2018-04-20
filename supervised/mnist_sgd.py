@@ -65,7 +65,6 @@ if args.cuda:
     model.cuda()
 
 optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.999)
 
 g = open('data/mnist-sgd-'+str(args.seed)+'.csv', 'w')
 while True:    
@@ -83,7 +82,6 @@ while True:
     loss = F.nll_loss(output, y)
     loss.backward()
     optimizer.step()
-    scheduler.step()
 
 
     # Test

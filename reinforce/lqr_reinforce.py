@@ -83,14 +83,14 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
 
     #evalue the optimal K:
     #optimal_perf = evaluation(env = env, batch_size = batch_size*2, K = env.optimal_K)
-    print "optimal K's performance is {}".format(-env.optimal_cost)
+    print("optimal K's performance is {}".format(-env.optimal_cost))
 
     test_perfs = []
     for e in range(max_iter):
 
         #evaluation on the current K:
         perf = evaluation(env = env, batch_size = batch_size, K=K)
-        print "at epoch {}, current K's avg cummulative reward is {}".format(e, perf)
+        print("at epoch {}, current K's avg cummulative reward is {}".format(e, perf))
         test_perfs.append(perf)
         num_steps = 0
         #rollout:
@@ -128,7 +128,7 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--tsteps', type=int, default=100)
-parser.add_argument('--x_dim', type=int, default=100)
+parser.add_argument('--x_dim', type=int, default=1000)
 parser.add_argument('--a_dim', type=int, default=1)
 parser.add_argument('--lr', type=float, default=1e-3)
 parser.add_argument('--seed', type=int, default=1000)
