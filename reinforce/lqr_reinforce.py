@@ -106,15 +106,18 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
 
     #evalue the optimal K:
     #optimal_perf = evaluation(env = env, batch_size = batch_size*2, K = env.optimal_K)
-    print("optimal K's performance is {}".format(-env.optimal_cost))
+    print("optimal K's performance is {}".format(env.optimal_cost))
 
     test_perfs = []
     for e in range(max_iter):
         #evaluation on the current K:
-        perf = evaluation(env = env, batch_size = batch_size, K=K, stats=stats)
-        print("at epoch {}, current K's avg cummulative reward is {}".format(e, perf))
+        # perf = evaluation(env = env, batch_size = batch_size, K=K, stats=stats)
+        # print("at epoch {}, current K's avg cummulative reward is {}".format(e, perf))
+        cum_c = env.evaluate_policy(K)
+        info = (e, e*batch_size, cum_c)
+        print(info)
 
-        test_perfs.append(perf)
+        test_perfs.append(info)
         num_steps = 0
         #rollout:
         trajs = roll_out(env = env, batch_size = batch_size, K = K, 
@@ -164,6 +167,7 @@ parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--batch_size', type=int, default=100) 
 #in every epoch, we generate batch_size # of steps (batch_size/T = num of trajectories)
 parser.add_argument('--iters', type=int, default=100)
+parser.add_argument('--explore_mag', type=float, default=0.5)
 args = parser.parse_args()
 
 env = LQGEnv(x_dim = args.x_dim, u_dim = args.a_dim, rank = 5)
@@ -175,9 +179,9 @@ stats = RunningStat(args.x_dim * args.a_dim)
 stats = None
 K0 = np.random.randn(args.a_dim, args.x_dim)*0.1
 #K0 = 5*np.random.randn(args.a_dim, args.x_dim) / np.sqrt(args.x_dim*args.a_dim)
-test_perfs = policy_gradient_adam_linear_policy(env, explore_mag=0.5,
+test_perfs = policy_gradient_adam_linear_policy(env, explore_mag=args.explore_mag,
         optimizer = optimizer, batch_size=args.batch_size, max_iter=args.iters, 
-        K0 = None, Natural=True, kl = args.lr, stats = stats)
+        K0 = None, Natural=False, kl = args.lr, stats = stats)
 
 
 
