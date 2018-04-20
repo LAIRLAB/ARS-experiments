@@ -74,6 +74,11 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
 
     e = 1
     while True:
+        cum_c = env.evaluate_policy(K) #analytically compute cost
+        info = (e, e*batch_size, cum_c)
+        print info
+        test_perfs.append(info)
+
         # note in each epoch, we use 2*num_directions*T steps
         #hence batch_size is 2*num_directions*T
         #sample directions
@@ -90,19 +95,14 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
                 traj = rollout_one_traj(env = env, K = Kp, stats = stats)
                 returns[posneg, d] = traj.c_rew
                 #update running mean and std using the latest trajectory
-                stats.push_batch(np.array(traj.xs)) 
+                if stats is not None:
+                    stats.push_batch(np.array(traj.xs)) 
         
         top_directions, top_returns = get_top_directions_returns(
                     returns.T, directions, num_top_directions)
         
         w = update_parameters(w, lr, top_returns, top_directions)
         K = w.reshape(a_dim, x_dim)
-
-        #perform test: report cummualative cost:
-        cum_c = env.evaluate_policy(K) #analytically compute cost
-        info = (e, e*batch_size, cum_c)
-        print(info)
-        test_perfs.append(info)
 
         if e*batch_size >= num_total_steps: #break if hits the max number of steps.
             break
@@ -119,7 +119,7 @@ parser.add_argument('--stepsize', type=float, default=0.02)
 parser.add_argument('--num_directions', type=int, default=10)
 parser.add_argument('--num_top_directions', type=int, default=5)
 parser.add_argument('--perturbation_length', type=float, default=0.01)
-parser.add_argument('--x_dim', type=int, default=1000)
+parser.add_argument('--x_dim', type=int, default=200)
 parser.add_argument('--a_dim', type=int, default=1)
 parser.add_argument('--batch_size', type=int, default=100) 
 
@@ -133,9 +133,9 @@ np.random.seed(args.seed)
 random.seed(args.seed)
 
 env = LQGEnv(x_dim = args.x_dim, u_dim = args.a_dim, rank = 5)
-stats = RunningStat(args.x_dim * args.a_dim)
-K0 = np.random.randn(args.a_dim, args.x_dim)*0.0
-
+#stats = RunningStat(args.x_dim * args.a_dim)
+stats = None
+K0 = np.ones((args.a_dim, args.x_dim))*10 #np.random.randn(args.a_dim, args.x_dim)*0.01
 test_perfs = lqr_ars(env, stats, args.stepsize, args.perturbation_length, 
         num_top_directions=args.num_top_directions, 
         num_directions=args.num_directions, 
