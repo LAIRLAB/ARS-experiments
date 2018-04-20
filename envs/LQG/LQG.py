@@ -93,16 +93,23 @@ class LQGEnv(gym.Env):
         np.random.seed(1337) #fix A and B
         self.A = np.zeros((x_dim,x_dim))
         for i in range(x_dim):
-            self.A[i,i] = 1.01
+            self.A[i,i] = 1.05
             k = 0
             while k <= rank:   #intuition: one server's heat slightly increases 5 other serves' temp
                 pos = np.random.randint(x_dim)
                 if pos != i:
-                    self.A[i, pos] = 0.01
+                    self.A[i, pos] = 0.05
                     k = k + 1 
-                                   
+
+        #tmpA = np.random.randn(x_dim,x_dim)
+        #A = tmpA.T.dot(tmpA)
+        #s,U = np.linalg.eig(A)
+        #s = s / np.linalg.norm(s)
+        #self.A = U.dot(np.diag(s)).dot(U.T)
+        
         self.B = np.random.rand(x_dim, u_dim) #u_dim many fans to reduce the temp of all servers. 
-        self.Q = 1e-3*np.eye(x_dim)
+        self.Q = 1e-3*np.eye(x_dim)/np.sqrt(x_dim)
+        #self.Q = np.eye(x_dim)/np.sqrt(x_dim)
         self.R = np.eye(u_dim)
 
         self.x_dim = x_dim
@@ -117,7 +124,7 @@ class LQGEnv(gym.Env):
         self.state = None
         self.noise_cov = np.eye(self.x_dim)*0.0001
 
-        self.T = 20
+        self.T = 50
         
         self.optimal_cost = finite_LQR_solver(self.A,self.B, self.Q,self.R, self.T, 
                 self.init_state_mean,self.init_state_cov, self.noise_cov)
