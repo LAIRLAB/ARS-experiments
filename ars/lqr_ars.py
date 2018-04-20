@@ -76,7 +76,7 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
     while True:
         cum_c = env.evaluate_policy(K) #analytically compute cost
         info = (e, e*batch_size, cum_c)
-        print info
+        print(info)
         test_perfs.append(info)
 
         # note in each epoch, we use 2*num_directions*T steps
