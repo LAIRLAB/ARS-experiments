@@ -41,6 +41,14 @@ def rollout_one_traj(env, K, stats = None):
 
     return traj
 
+def evaluation(env, K, stats = None, num_trajs = 10):
+    trajs_c_rew = []
+    for i in xrange(num_trajs):
+        traj = rollout_one_traj(env, K, stats)
+        trajs_c_rew.append(traj.c_rew)
+    
+    return np.mean(trajs_c_rew)
+
 
 def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5, 
             num_directions = 10, num_total_steps = 100, K0 = None):
@@ -59,7 +67,7 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
         (iter id, total steps so far,current test cummulative cost)
     '''
 
-    print("running ars..")
+    print "running ars.."
     a_dim = env.a_dim
     x_dim = env.x_dim
     T = env.T #traj length
@@ -69,14 +77,15 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
         K0 = 0.0 * np.random.randn(a_dim, x_dim)
     K = K0
 
-    print("[optimal K's performance is {}]".format(env.optimal_cost))
+    print "[optimal K's performance is {}]".format(env.optimal_cost)
     test_perfs = []
 
     e = 1
     while True:
-        cum_c = env.evaluate_policy(K) #analytically compute cost
+        #cum_c = evaluation(env, K, stats)  #env.evaluate_policy(K) #analytically compute cost
+        cum_c = env.evaluate_policy(K)
         info = (e, e*batch_size, cum_c)
-        print(info)
+        print info
         test_perfs.append(info)
 
         # note in each epoch, we use 2*num_directions*T steps
@@ -104,6 +113,8 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
         w = update_parameters(w, lr, top_returns, top_directions)
         K = w.reshape(a_dim, x_dim)
 
+        #perform test: report cummualative cost:
+
         if e*batch_size >= num_total_steps: #break if hits the max number of steps.
             break
         e += 1
@@ -116,8 +127,8 @@ parser.add_argument('--n_accesses', type=int, default=1000000)
 parser.add_argument('--seed', type=int, default=1)
 # ARS parameters
 parser.add_argument('--stepsize', type=float, default=0.02)
-parser.add_argument('--num_directions', type=int, default=10)
-parser.add_argument('--num_top_directions', type=int, default=5)
+parser.add_argument('--num_directions', type=int, default=50)
+parser.add_argument('--num_top_directions', type=int, default=20)
 parser.add_argument('--perturbation_length', type=float, default=0.01)
 parser.add_argument('--x_dim', type=int, default=200)
 parser.add_argument('--a_dim', type=int, default=1)
@@ -135,8 +146,10 @@ random.seed(args.seed)
 env = LQGEnv(x_dim = args.x_dim, u_dim = args.a_dim, rank = 5)
 #stats = RunningStat(args.x_dim * args.a_dim)
 stats = None
-K0 = np.ones((args.a_dim, args.x_dim))*10 #np.random.randn(args.a_dim, args.x_dim)*0.01
+#K0 = np.ones((args.a_dim, args.x_dim))*10 #np.random.randn(args.a_dim, args.x_dim)*0.01
+K0 = np.random.randn(args.a_dim, args.x_dim)*0.5
+#K0 = np.linalg.pinv(env.B).dot(np.eye(env.x_dim) - env.A)
 test_perfs = lqr_ars(env, stats, args.stepsize, args.perturbation_length, 
         num_top_directions=args.num_top_directions, 
         num_directions=args.num_directions, 
-        num_total_steps = args.n_accesses, K0 = None)
+        num_total_steps = args.n_accesses, K0 = K0)

@@ -5,6 +5,7 @@ from envs.linreg.linreg import LinReg
 from utils.adam import Adam
 from utils.ars import *
 from IPython import embed
+import random
 
 
 class Trajectory(object):
@@ -71,9 +72,12 @@ def processing_batch(trajs, gamma = 0.99, stats = None):
         acts = acts + traj.acts
         acts_mean = acts_mean + traj.acts_mean
         rews = traj.rews
-        avg_rew += np.sum(np.array(rews)*gamma_seqs[0:len(rews)])
-        qs = [np.sum(rews[i:]*gamma_seqs[0:len(rews[i:])]) for i in range(len(rews))]
-        ctgs = ctgs + qs 
+        #avg_rew += np.sum(np.array(rews)*gamma_seqs[0:len(rews)])
+        avg_rew += traj.c_rew
+        #qs = [np.sum(rews[i:]*gamma_seqs[0:len(rews[i:])]) for i in range(len(rews))]
+        qs = [np.sum(rews[i:]) for i in range(len(rews))]
+        #embed()
+        ctgs = ctgs + list(np.ones(len(rews))*traj.c_rew) #ctgs + qs 
 
     #a constant baseline: the mean of the traj cummulative reward:
     baseline = avg_rew / (len(trajs)*1.)
@@ -106,24 +110,21 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
 
     #evalue the optimal K:
     #optimal_perf = evaluation(env = env, batch_size = batch_size*2, K = env.optimal_K)
-    print("optimal K's performance is {}".format(env.optimal_cost))
+    print "optimal K's performance is {}".format(-env.optimal_cost)
 
     test_perfs = []
     for e in range(max_iter):
         #evaluation on the current K:
-        # perf = evaluation(env = env, batch_size = batch_size, K=K, stats=stats)
-        # print("at epoch {}, current K's avg cummulative reward is {}".format(e, perf))
-        cum_c = env.evaluate_policy(K)
-        info = (e, e*batch_size, cum_c)
-        print(info)
-
-        test_perfs.append(info)
+        #perf = evaluation(env = env, batch_size = batch_size, K=K, stats = stats)
+        perf = env.evaluate_policy(K)
+        print "at epoch {}, current K's avg cummulative reward is {}".format(e, perf)
+        test_perfs.append(perf)
         num_steps = 0
         #rollout:
         trajs = roll_out(env = env, batch_size = batch_size, K = K, 
             explore_mag = explore_mag, test = False, stats = stats)
         #process batch data:
-        xs,acts,acts_mean, advs,ctgs = processing_batch(trajs, gamma = 0.99, stats = stats)
+        xs,acts,acts_mean, advs,ctgs = processing_batch(trajs, gamma = 1., stats = stats)
         #compute gradient:
         mean_acts = acts_mean
         d_acts = acts - mean_acts
@@ -134,12 +135,9 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
 
         weighted_d_acts = np.matmul(d_acts[:,:,np.newaxis], advs[:,np.newaxis, np.newaxis])
         weighted_d_acts = np.reshape(weighted_d_acts, (weighted_d_acts.shape[0], env.a_dim))
-        #weighted_d_acts_s = weighted_d_acts.T.dot(xs)/
-        #weighted_d_acts_s = np.matmul(weighted_d_acts[:,:,np.newaxis], xs[:, np.newaxis,:])
         gradient = weighted_d_acts.T.dot(xs)/(xs.shape[0])
         #if np.linalg.norm(gradient) > 100.:
-        #    gradient /= np.linalg.norm(gradient)
-        #gradient = np.mean(weighted_d_acts_s,axis=0)
+        #    gradient = 100.*gradient/np.linalg.norm(gradient)
 
         if Natural is True:
             JJp = xs.T.dot(xs)/xs.shape[0]
@@ -154,6 +152,7 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
             new_flatten_param = optimizer.update(K.reshape(env.x_dim*env.a_dim), 
                -gradient.reshape(env.x_dim*env.a_dim))
             K = new_flatten_param.reshape(env.a_dim, env.x_dim)
+            #optimizer.alpha /= (e+1)**0.1
     
     return test_perfs
 
@@ -167,21 +166,23 @@ parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--batch_size', type=int, default=100) 
 #in every epoch, we generate batch_size # of steps (batch_size/T = num of trajectories)
 parser.add_argument('--iters', type=int, default=100)
-parser.add_argument('--explore_mag', type=float, default=0.5)
 args = parser.parse_args()
+np.random.seed(args.seed)
+random.seed(args.seed)
 
 env = LQGEnv(x_dim = args.x_dim, u_dim = args.a_dim, rank = 5)
 #env = LinReg(args.x_dim, batch_size = 1)
 optimizer = Adam(args.x_dim*args.a_dim, args.lr)
 
-np.random.seed(args.seed)
 stats = RunningStat(args.x_dim * args.a_dim)
 stats = None
+
 K0 = np.random.randn(args.a_dim, args.x_dim)*0.1
+#K0 = np.linalg.pinv(env.B).dot(np.eye(env.x_dim) - env.A)
 #K0 = 5*np.random.randn(args.a_dim, args.x_dim) / np.sqrt(args.x_dim*args.a_dim)
-test_perfs = policy_gradient_adam_linear_policy(env, explore_mag=args.explore_mag,
+test_perfs = policy_gradient_adam_linear_policy(env, explore_mag=0.1,
         optimizer = optimizer, batch_size=args.batch_size, max_iter=args.iters, 
-        K0 = None, Natural=False, kl = args.lr, stats = stats)
+        K0 = K0, Natural = False, kl = args.lr, stats = stats)
 
 
 
