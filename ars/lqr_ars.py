@@ -80,13 +80,15 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
     print "[optimal K's performance is {}]".format(env.optimal_cost)
     test_perfs = []
 
-    e = 1
+    e = 0
     while True:
         #cum_c = evaluation(env, K, stats)  #env.evaluate_policy(K) #analytically compute cost
         cum_c = env.evaluate_policy(K)
         info = (e, e*batch_size, cum_c)
         print info
         test_perfs.append(info)
+        if abs(cum_c - env.optimal_cost)/env.optimal_cost < 0.05:
+            break
 
         # note in each epoch, we use 2*num_directions*T steps
         #hence batch_size is 2*num_directions*T
@@ -130,7 +132,7 @@ parser.add_argument('--stepsize', type=float, default=0.02)
 parser.add_argument('--num_directions', type=int, default=50)
 parser.add_argument('--num_top_directions', type=int, default=20)
 parser.add_argument('--perturbation_length', type=float, default=0.01)
-parser.add_argument('--x_dim', type=int, default=200)
+parser.add_argument('--x_dim', type=int, default=500)
 parser.add_argument('--a_dim', type=int, default=1)
 parser.add_argument('--batch_size', type=int, default=100) 
 
@@ -143,11 +145,11 @@ args = parser.parse_args()
 np.random.seed(args.seed)
 random.seed(args.seed)
 
-env = LQGEnv(x_dim = args.x_dim, u_dim = args.a_dim, rank = 5)
+env = LQGEnv(x_dim = args.x_dim, u_dim = args.a_dim, rank = 5, seed=args.seed)
 #stats = RunningStat(args.x_dim * args.a_dim)
 stats = None
-#K0 = np.ones((args.a_dim, args.x_dim))*10 #np.random.randn(args.a_dim, args.x_dim)*0.01
-K0 = np.random.randn(args.a_dim, args.x_dim)*0.5
+K0 = np.ones((args.a_dim, args.x_dim))*0.01 #np.random.randn(args.a_dim, args.x_dim)*0.01
+#K0 = np.random.randn(args.a_dim, args.x_dim)*0.5
 #K0 = np.linalg.pinv(env.B).dot(np.eye(env.x_dim) - env.A)
 test_perfs = lqr_ars(env, stats, args.stepsize, args.perturbation_length, 
         num_top_directions=args.num_top_directions, 

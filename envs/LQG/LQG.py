@@ -98,7 +98,7 @@ class LQGEnv(gym.Env):
         #utils.EzPickle.__init__(self)
         #mujoco_env.MujocoEnv.__init__(self, 'LQG.xml', 2)
 
-        #np.random.seed(seed) #fix A and B
+        np.random.seed(seed) #fix A and B
         self.A = np.zeros((x_dim,x_dim))
         #for i in range(x_dim):
         #    self.A[i,i] = 1.05
@@ -131,12 +131,12 @@ class LQGEnv(gym.Env):
         self.action_space = gym_box.Box(low = -np.inf, high = np.inf, shape = (u_dim, ))
 
         self.init_state_mean = 1*np.ones(self.x_dim)*1/np.sqrt(self.x_dim)
-        self.init_state_cov = np.eye(self.x_dim)*0.1/self.x_dim
+        self.init_state_cov = np.eye(self.x_dim)/self.x_dim
 
         self.state = None
-        self.noise_cov = np.eye(self.x_dim)*0.001
+        self.noise_cov = np.eye(self.x_dim)*0.01
 
-        self.T = 20
+        self.T = 10
         
         self.optimal_cost = finite_LQR_solver(self.A,self.B, self.Q,self.R, self.T, 
                 self.init_state_mean,self.init_state_cov, self.noise_cov)

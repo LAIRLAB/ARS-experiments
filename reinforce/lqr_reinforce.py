@@ -117,7 +117,12 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
         #evaluation on the current K:
         #perf = evaluation(env = env, batch_size = batch_size, K=K, stats = stats)
         perf = env.evaluate_policy(K)
-        print "at epoch {}, current K's avg cummulative reward is {}".format(e, perf)
+        info = (e, e*batch_size, perf)
+        print (info)
+        if abs(perf - env.optimal_cost)/env.optimal_cost < 0.05:
+            break
+
+        #print "at epoch {}, current K's avg cummulative reward is {}".format(e, perf)
         test_perfs.append(perf)
         num_steps = 0
         #rollout:
@@ -159,25 +164,25 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--tsteps', type=int, default=100)
-parser.add_argument('--x_dim', type=int, default=200)
+parser.add_argument('--x_dim', type=int, default=500)
 parser.add_argument('--a_dim', type=int, default=1)
-parser.add_argument('--lr', type=float, default=1e-3)
+parser.add_argument('--lr', type=float, default=0.005)
 parser.add_argument('--seed', type=int, default=1)
-parser.add_argument('--batch_size', type=int, default=100) 
+parser.add_argument('--batch_size', type=int, default=128) 
 #in every epoch, we generate batch_size # of steps (batch_size/T = num of trajectories)
 parser.add_argument('--iters', type=int, default=100)
 args = parser.parse_args()
 np.random.seed(args.seed)
 random.seed(args.seed)
 
-env = LQGEnv(x_dim = args.x_dim, u_dim = args.a_dim, rank = 5)
+env = LQGEnv(x_dim = args.x_dim, u_dim = args.a_dim, rank = 5, seed = args.seed)
 #env = LinReg(args.x_dim, batch_size = 1)
 optimizer = Adam(args.x_dim*args.a_dim, args.lr)
 
 stats = RunningStat(args.x_dim * args.a_dim)
 stats = None
 
-K0 = np.random.randn(args.a_dim, args.x_dim)*0.1
+K0 = 0.01*np.ones((args.a_dim, args.x_dim)) #np.random.randn(args.a_dim, args.x_dim)*0.5
 #K0 = np.linalg.pinv(env.B).dot(np.eye(env.x_dim) - env.A)
 #K0 = 5*np.random.randn(args.a_dim, args.x_dim) / np.sqrt(args.x_dim*args.a_dim)
 test_perfs = policy_gradient_adam_linear_policy(env, explore_mag=0.1,
