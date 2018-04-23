@@ -88,7 +88,8 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
         print info
         test_perfs.append(info)
         if abs(cum_c - env.optimal_cost)/env.optimal_cost < 0.05:
-            break
+            return e*batch_size
+            #break
 
         # note in each epoch, we use 2*num_directions*T steps
         #hence batch_size is 2*num_directions*T
@@ -96,7 +97,7 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
         directions = sample_directions(num_directions, a_dim*x_dim)
         w = K.flatten()
         #given  w reshaped from the current K, generated perturbed policies. 
-        perturbed_ws = perturb_parameters(w, directions, explore_mag) 
+        perturbed_ws = perturb_parameters(w, directions, explore_mag)
         returns = np.zeros((2, num_directions))
 
         for d in range(num_directions): #for each direction
@@ -107,25 +108,26 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
                 returns[posneg, d] = traj.c_rew
                 #update running mean and std using the latest trajectory
                 if stats is not None:
-                    stats.push_batch(np.array(traj.xs)) 
-        
+                    stats.push_batch(np.array(traj.xs))
+
         top_directions, top_returns = get_top_directions_returns(
                     returns.T, directions, num_top_directions)
-        
+
         w = update_parameters(w, lr, top_returns, top_directions)
         K = w.reshape(a_dim, x_dim)
 
         #perform test: report cummualative cost:
 
-        if e*batch_size >= num_total_steps: #break if hits the max number of steps.
-            break
+        if (e+1)*batch_size >= num_total_steps: #break if hits the max number of steps.
+            return num_total_steps
+            #break
         e += 1
 
-    return test_perfs
-        
-        
+    #return test_perfs
+
+'''
 parser = argparse.ArgumentParser()
-parser.add_argument('--n_accesses', type=int, default=1000000)
+parser.add_argument('--n_accesses', type=int, default=100000)
 parser.add_argument('--seed', type=int, default=1)
 # ARS parameters
 parser.add_argument('--stepsize', type=float, default=0.02)
@@ -155,3 +157,4 @@ test_perfs = lqr_ars(env, stats, args.stepsize, args.perturbation_length,
         num_top_directions=args.num_top_directions, 
         num_directions=args.num_directions, 
         num_total_steps = args.n_accesses, K0 = K0)
+'''
