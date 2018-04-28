@@ -94,7 +94,7 @@ def finite_K_cost(A, B, Q, R, K, T, x_0, Cov_0):
 #class LinearQuadGausEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 class LQGEnv(gym.Env):
 
-    def __init__(self, x_dim, u_dim = 1, rank = 5, seed = 100):
+    def __init__(self, x_dim, u_dim = 1, rank = 5, seed = 100, T = 10):
         #utils.EzPickle.__init__(self)
         #mujoco_env.MujocoEnv.__init__(self, 'LQG.xml', 2)
 
@@ -117,7 +117,7 @@ class LQGEnv(gym.Env):
         #embed()
         s[int(x_dim/2.):] *= 0.1
         self.A = U.dot(np.diag(s)).dot(U.T)
-        
+
         #self.B = np.random.rand(x_dim, u_dim) #u_dim many fans to reduce the temp of all servers. 
         self.B = np.ones((x_dim, u_dim))
         #self.Q = 1e-3*np.eye(x_dim)#/np.sqrt(x_dim)
@@ -136,8 +136,8 @@ class LQGEnv(gym.Env):
         self.state = None
         self.noise_cov = np.eye(self.x_dim)*0.01
 
-        self.T = 10
-        
+        self.T = T
+
         self.optimal_cost = finite_LQR_solver(self.A,self.B, self.Q,self.R, self.T, 
                 self.init_state_mean,self.init_state_cov, self.noise_cov)
 
