@@ -89,7 +89,7 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
         test_perfs.append(info)
         if abs(cum_c - env.optimal_cost)/env.optimal_cost < 0.05:
             return e*batch_size
-            #break
+        #    break
 
         # note in each epoch, we use 2*num_directions*T steps
         #hence batch_size is 2*num_directions*T
@@ -120,10 +120,10 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
 
         if (e+1)*batch_size >= num_total_steps: #break if hits the max number of steps.
             return num_total_steps
-            #break
+            break
         e += 1
 
-    #return test_perfs
+    return test_perfs
 
 '''
 parser = argparse.ArgumentParser()
