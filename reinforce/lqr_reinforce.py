@@ -60,7 +60,8 @@ def evaluation(env, batch_size, K, stats = None):
     return np.mean(c_rews)
 
 def processing_batch(trajs, gamma = 0.99, stats = None):
-    gamma_seqs = np.array([gamma**i for i in range(0,100)])
+    gamma = 1.
+    gamma_seqs = np.array([gamma**i for i in range(0,1000)])
     xs = []
     acts = []
     acts_mean = []
@@ -74,8 +75,8 @@ def processing_batch(trajs, gamma = 0.99, stats = None):
         rews = traj.rews
         #avg_rew += np.sum(np.array(rews)*gamma_seqs[0:len(rews)])
         avg_rew += traj.c_rew
-        #qs = [np.sum(rews[i:]*gamma_seqs[0:len(rews[i:])]) for i in range(len(rews))]
-        qs = [np.sum(rews[i:]) for i in range(len(rews))]
+        qs = [np.sum(rews[i:]*gamma_seqs[0:len(rews[i:])]) for i in range(len(rews))]
+        #qs = [np.sum(rews[i:]) for i in range(len(rews))]
         #embed()
         ctgs = ctgs + list(np.ones(len(rews))*traj.c_rew) #ctgs + qs 
 
@@ -85,27 +86,31 @@ def processing_batch(trajs, gamma = 0.99, stats = None):
     acts_mean = np.array(acts_mean)
     acts = np.array(acts)
     ctgs = np.array(ctgs)
-    advs = ctgs - baseline
+    advs = ctgs #- baseline
 
     adv_mean = np.mean(advs)
     adv_std = np.std(advs)
-    advs = (advs - adv_mean) / adv_std
+    #advs = (advs - adv_mean) / adv_std
 
     if stats is not None:
         stats.push_batch(xs)
         xs = (xs - stats.mean)/stats.std
-        
+
     return xs, acts, acts_mean, advs, ctgs
-        
+
 def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1, 
-            batch_size = 100, max_iter = 100, K0 = None, Natural = False, kl = 1e-3, stats = None):
+            batch_size = 100, max_iter = 100, K0 = None, Natural = False, kl = 1e-3, stats = None, sigma = None):
 
     a_dim = env.a_dim
     x_dim = env.x_dim 
     if K0 is None:
         K0 = 0.0 * np.random.randn(a_dim, x_dim)
-    
-    K = K0 
+    if sigma is None:
+        sigma = 0. #std exp(sigma) = 0
+
+    K = K0
+    sigma = sigma
+    print sigma
     baseline = 0.0 
 
     #evalue the optimal K:
@@ -113,13 +118,16 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
     print "optimal K's performance is {}".format(-env.optimal_cost)
 
     test_perfs = []
-    for e in range(max_iter):
+    #for e in range(max_iter):
+    e = 0
+    while True:
         #evaluation on the current K:
         #perf = evaluation(env = env, batch_size = batch_size, K=K, stats = stats)
         perf = env.evaluate_policy(K)
-        info = (e, e*batch_size, perf)
+        info = (e, e*batch_size, sigma, optimizer.alpha, perf)
         print (info)
         if abs(perf - env.optimal_cost)/env.optimal_cost < 0.05:
+            return e*batch_size
             break
 
         #print "at epoch {}, current K's avg cummulative reward is {}".format(e, perf)
@@ -127,7 +135,7 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
         num_steps = 0
         #rollout:
         trajs = roll_out(env = env, batch_size = batch_size, K = K, 
-            explore_mag = explore_mag, test = False, stats = stats)
+            explore_mag = np.exp(sigma), test = False, stats = stats)
         #process batch data:
         xs,acts,acts_mean, advs,ctgs = processing_batch(trajs, gamma = 1., stats = stats)
         #compute gradient:
@@ -141,6 +149,11 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
         weighted_d_acts = np.matmul(d_acts[:,:,np.newaxis], advs[:,np.newaxis, np.newaxis])
         weighted_d_acts = np.reshape(weighted_d_acts, (weighted_d_acts.shape[0], env.a_dim))
         gradient = weighted_d_acts.T.dot(xs)/(xs.shape[0])
+        gradient *= 1./(np.exp(sigma)**2)
+
+        weighted_d_acts_square = np.mean(np.sum(d_acts**2, axis = 1)*advs)/(np.exp(sigma)**2)
+        concatenated_grad = np.concatenate([gradient.reshape(env.x_dim*env.a_dim), [weighted_d_acts_square]])
+
         #if np.linalg.norm(gradient) > 100.:
         #    gradient = 100.*gradient/np.linalg.norm(gradient)
 
@@ -154,20 +167,30 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
             #embed()
         else:
             #K = K + kl * gradient
-            new_flatten_param = optimizer.update(K.reshape(env.x_dim*env.a_dim), 
-               -gradient.reshape(env.x_dim*env.a_dim))
-            K = new_flatten_param.reshape(env.a_dim, env.x_dim)
+            #new_flatten_param = optimizer.update(K.reshape(env.x_dim*env.a_dim), 
+            #   -gradient.reshape(env.x_dim*env.a_dim))
+            #K = new_flatten_param.reshape(env.a_dim, env.x_dim)
+            new_flatten_param = optimizer.update(np.concatenate([K.reshape(env.x_dim*env.a_dim),[sigma]]), -concatenated_grad)
+            K = new_flatten_param[0:-1].reshape(env.a_dim, env.x_dim)
+            sigma = new_flatten_param[-1]
+
+
             #optimizer.alpha /= (e+1)**0.1
-    
+        if e*batch_size > 1e5:
+            #break
+            return e*batch_size
+        
+        e = e + 1
+
     return test_perfs
 
-
+'''
 parser = argparse.ArgumentParser()
 parser.add_argument('--tsteps', type=int, default=100)
 parser.add_argument('--x_dim', type=int, default=500)
 parser.add_argument('--a_dim', type=int, default=1)
 parser.add_argument('--lr', type=float, default=0.005)
-parser.add_argument('--seed', type=int, default=1)
+parser.add_argument('--seed', type=int, default=100)
 parser.add_argument('--batch_size', type=int, default=128) 
 #in every epoch, we generate batch_size # of steps (batch_size/T = num of trajectories)
 parser.add_argument('--iters', type=int, default=100)
@@ -188,6 +211,6 @@ K0 = 0.01*np.ones((args.a_dim, args.x_dim)) #np.random.randn(args.a_dim, args.x_
 test_perfs = policy_gradient_adam_linear_policy(env, explore_mag=0.1,
         optimizer = optimizer, batch_size=args.batch_size, max_iter=args.iters, 
         K0 = K0, Natural = False, kl = args.lr, stats = stats)
-
+'''
 
 
