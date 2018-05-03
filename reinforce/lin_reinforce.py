@@ -22,6 +22,7 @@ parser.add_argument('--batch_size', type=int, default=512)
 parser.add_argument('--test_batch_size', type=int, default=1000)
 # Debug parameters
 parser.add_argument('--verbose', action='store_true')
+parser.add_argument('--exp', action='store_true')
 
 # Parse arguments
 args = parser.parse_args()
@@ -39,7 +40,8 @@ optim = Adam(args.input_dim+1, args.lr)
 w = 5*np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
 # Log file
-g = open('data/linear-reinforce-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
+if not args.exp:    
+    g = open('data/linear-reinforce-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
 
 # Start
 while True:    
@@ -61,17 +63,26 @@ while True:
     # adam update
     w = optim.update(w, grad)
 
-    # Test
-    x, y = env.reset(test=True)
-    yhat = x.dot(w)
-    _, reward, _, _ = env.step(yhat, test=True)
-    mse_loss = -np.mean(reward)
-
-    if args.verbose:
-        print(env.get_num_accesses(), mse_loss)
+    if not args.exp:        
+        # Test
+        x, y = env.reset(test=True)
+        yhat = x.dot(w)
+        _, reward, _, _ = env.step(yhat, test=True)
+        mse_loss = -np.mean(reward)
         
-    g.write(str(env.get_num_accesses())+','+str(mse_loss)+'\n')
+        if args.verbose:
+            print(env.get_num_accesses(), mse_loss)
+        
+        g.write(str(env.get_num_accesses())+','+str(mse_loss)+'\n')
 
     # Check termination
     if env.get_num_accesses() >= args.n_accesses:
         break
+
+if args.exp:
+    g = open('data/hyperparam_tuning_results_reinforce_'+str(args.seed), 'a')
+    x, y = env.reset(test=True)
+    yhat = x.dot(w)
+    _, reward, _, _ = env.step(yhat, test=True)
+    mse_loss = -np.mean(reward)
+    g.write(str(args.lr)+','+str(mse_loss)+'\n')
