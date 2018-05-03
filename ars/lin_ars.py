@@ -18,9 +18,9 @@ parser.add_argument('--input_dim', type=int, default=100)
 parser.add_argument('--test_batch_size', type=int, default=1000)
 # ARS parameters
 parser.add_argument('--stepsize', type=float, default=0.03)
-parser.add_argument('--num_directions', type=int, default=50)
-parser.add_argument('--num_top_directions', type=int, default=20)
-parser.add_argument('--perturbation_length', type=float, default=0.03)
+parser.add_argument('--num_directions', type=int, default=10)
+parser.add_argument('--num_top_directions', type=int, default=10)
+parser.add_argument('--perturbation_length', type=float, default=0.02)
 # Hyperparam tuning params
 parser.add_argument('--exp', action='store_true')
 parser.add_argument('--threshold', type=int, default=100000, help='Number of accesses after which performance is evaluated')
@@ -82,14 +82,14 @@ while True:
     # Update params
     w = update_parameters(w, args.stepsize, top_returns, top_directions)
 
-    # Test
-    x, y = env.reset(test=True)
-    x_norm = x.copy()
-    x_norm[:, 1:] = (x[:, 1:] - stats.mean) / stats.std
-    yhat = x_norm.dot(w)
-    _, reward, _, _ = env.step(yhat, test=True)
-    mse_loss = -np.mean(reward)
-    if not args.exp:
+    if not args.exp:        
+        # Test
+        x, y = env.reset(test=True)
+        x_norm = x.copy()
+        x_norm[:, 1:] = (x[:, 1:] - stats.mean) / stats.std
+        yhat = x_norm.dot(w)
+        _, reward, _, _ = env.step(yhat, test=True)
+        mse_loss = -np.mean(reward)
         if args.verbose:
             print(env.get_num_accesses(), mse_loss)
         g.write(str(env.get_num_accesses())+','+str(mse_loss)+'\n')
