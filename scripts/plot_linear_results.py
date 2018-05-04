@@ -3,8 +3,8 @@ import csv
 import numpy as np
 
 seeds = [5488, 7151, 6027, 5448, 4236, 6458, 4375, 8917, 9636, 3834]
-# exps = ['ars', 'reinforce', 'sgd', 'naturalreinforce', 'newton']
-exps = ['ars', 'reinforce', 'sgd']
+exps = ['ars', 'reinforce', 'sgd', 'naturalreinforce', 'newton']
+# exps = ['ars', 'reinforce', 'sgd', 'naturalreinforce']
 
 num_accesses = 300000
 
@@ -16,7 +16,7 @@ for e in exps:
     
 for e in exps:
     for s in seeds:
-        filename = 'data/linear-'+e+'-'+str(s)+'-1000.csv'
+        filename = 'data/linear-'+e+'-'+str(s)+'-100.csv'
         losses[e][s] = []
         n_accesses[e][s] = []
         with open(filename, 'r') as csvfile:
@@ -44,14 +44,18 @@ for e in exps:
     maxresults[e] = np.amax(results[e], axis=0)
 
 # Plotting
-colors = ['red', 'blue', 'green', 'cyan', 'magenta']
+colors = ['red', 'blue', 'green', 'black', 'magenta']
 for i, e in enumerate(exps):
-    plt.plot(n_accesses[e][5488], meanresults[e], color=colors[i], label=e)
+    plt.plot(n_accesses[e][5488], meanresults[e], color=colors[i], label=e, linewidth=2)
     plt.fill_between(n_accesses[e][5488], np.maximum(minresults[e], meanresults[e]-stdresults[e]), np.minimum(maxresults[e], meanresults[e]+stdresults[e]), facecolor=colors[i], alpha=0.2)
 
-plt.xlim([0, num_accesses])
+# plt.xlim([0, num_accesses])
+plt.xscale('log')
+# plt.xlim([0, 3*10**5])
+plt.ylim([-1, 35])
 plt.xlabel('Number of samples')
 plt.ylabel('Test squared loss')
-plt.title('Linear regression with input dimensionality 1000')
+plt.title('Linear regression with input dimensionality 100')
+# plt.xscale('log')
 plt.legend()
 plt.show()

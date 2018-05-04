@@ -4,3 +4,5 @@ data
 *.pkl
 MUJOCO_LOG.TXT
 *-info
+reinforce/lin_reinforce_sigma.py
+plot
