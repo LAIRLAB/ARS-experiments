@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 # Experiment parameters
 parser.add_argument('--n_accesses', type=int, default=1000000)
 parser.add_argument('--tsteps', type=int, default=100)
-parser.add_argument('--lr', type=float, default=1e-2)
+parser.add_argument('--lr', type=float, default=2.0)
 parser.add_argument('--momentum', type=float, default=0.5)
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--input_dim', type=int, default=100)
@@ -22,6 +22,7 @@ parser.add_argument('--batch_size', type=int, default=512)
 parser.add_argument('--test_batch_size', type=int, default=1000)
 # Debug parameters
 parser.add_argument('--verbose', action='store_true')
+parser.add_argument('--exp', action='store_true')
 
 # Parse arguments
 args = parser.parse_args()
@@ -37,13 +38,16 @@ env = LinReg(args.input_dim, args.batch_size, args.test_batch_size)
 w = 5 * np.random.randn(args.input_dim+1) / np.sqrt(args.input_dim+1)
 
 # Log file
-g = open('data/linear-naturalreinforce-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
+if not args.exp:    
+    g = open('data/linear-naturalreinforce-'+str(args.seed)+'-'+str(args.input_dim)+'.csv', 'w')
 
 # learning rate
 fixed_lr = args.lr
 
+t = 0
 # Start
-while True:    
+while True:
+    t += 1
     # Training
     # Get data
     x, y = env.reset()
@@ -60,29 +64,35 @@ while True:
     # Compute gradient
     grad = -(1./args.batch_size) * (x.T.dot(reward*(yhat - mu_yhat)))
     # Compute fisher information matrix
-    fim = 0
-    for i in range(args.batch_size):
-        xi = x[i].reshape(-1, 1)
-        fim += xi.dot(xi.T)
-    fim *= (1./args.batch_size)
+    fim = x.T.dot(x) / args.batch_size
     # Add a small factor of identity matrix for inverse stability purposes
     fim += 1e-3 * np.eye(args.input_dim+1)
     # Compute descent direction by solving linear least squares problem
     descent_dir = np.linalg.lstsq(fim, grad, rcond=None)[0]
+    fixed_lr = args.lr / np.sqrt(t)
     lr = np.sqrt(fixed_lr / descent_dir.dot(grad))
     # Update
     w = w - lr * descent_dir
-    
-    # Test
-    x, y = env.reset(test=True)
-    yhat = x.dot(w)
-    _, reward, _, _ = env.step(yhat, test=True)
-    loss = -np.mean(reward)
-    if args.verbose:        
-        print(t, env.get_num_accesses(), loss)
 
-    g.write(str(env.get_num_accesses())+','+str(loss)+'\n')
+    if not args.exp:        
+        # Test
+        x, y = env.reset(test=True)
+        yhat = x.dot(w)
+        _, reward, _, _ = env.step(yhat, test=True)
+        loss = -np.mean(reward)
+        if args.verbose:        
+            print(env.get_num_accesses(), loss)
+
+        g.write(str(env.get_num_accesses())+','+str(loss)+'\n')
 
     # Check termination
     if env.get_num_accesses() >= args.n_accesses:
         break
+
+if args.exp:
+    g = open('data/hyperparam_tuning_results_reinforce_'+str(args.seed), 'a')
+    x, y = env.reset(test=True)
+    yhat = x.dot(w)
+    _, reward, _, _ = env.step(yhat, test=True)
+    loss = -np.mean(reward)
+    g.write(str(args.lr)+','+str(loss)+'\n')
