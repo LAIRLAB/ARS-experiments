@@ -168,7 +168,7 @@ while True:
     correct = pred.eq(y.data.view_as(pred)).long().sum()
     accuracy = correct / args.test_batch_size
     if not args.exp:
-        if verbose:            
+        if args.verbose:            
             print(env.get_num_accesses(), accuracy)
         g.write(str(env.get_num_accesses())+','+str(accuracy)+'\n')
 
