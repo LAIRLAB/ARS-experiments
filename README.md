@@ -2,6 +2,13 @@
 
 ## Reproducing Experiments
 
+### Setup
+
+Run 
+```shell
+./scripts/setup.sh
+```
+
 ### MNIST Experiment
 
 To reproduce the results of the MNIST experiment, run
