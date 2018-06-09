@@ -110,12 +110,12 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
 
     K = K0
     sigma = sigma
-    print sigma
+    print (sigma)
     baseline = 0.0 
 
     #evalue the optimal K:
     #optimal_perf = evaluation(env = env, batch_size = batch_size*2, K = env.optimal_K)
-    print "optimal K's performance is {}".format(-env.optimal_cost)
+    print ("optimal K's performance is {}".format(-env.optimal_cost))
 
     test_perfs = []
     #for e in range(max_iter):

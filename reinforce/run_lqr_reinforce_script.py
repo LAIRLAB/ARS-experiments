@@ -13,21 +13,20 @@ x_dim = 100
 a_dim = 1
 
 
-Hs = [10, 20, 40, 60, 80, 100, 120, 140]
-Hs = [160, 180, 200]
+Hs = [10, 20, 40, 60, 80, 100, 120, 140, 160]
 
 
 lr = 0.005 #0.01
 K0 = np.ones((a_dim, x_dim))*0.01
 test_perf_cross_H = []
 for H in Hs:
-    print "at H = {}".format(H)
+    print("at H = {0}".format(H))
     test_perf_seeds = []
     for seed in test_param_seed:
-        print "at seed {}".format(seed)
+        print ("at seed {0}".format(seed))
         np.random.seed(seed)
         random.seed(seed)
-        optimizer = Adam(x_dim*a_dim+1, lr, decay = False)
+        optimizer = Adam(x_dim*a_dim+1, lr)
         env = LQGEnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T = H)
         batch_size = 10*H
         steps = policy_gradient_adam_linear_policy(env,explore_mag=0.1,
