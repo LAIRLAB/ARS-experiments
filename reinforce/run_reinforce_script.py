@@ -1,5 +1,5 @@
 import numpy as np
-from envs.LQR.LQR import LQREnv
+from envs.LQG.LQG import LQGEnv
 from envs.linreg.linreg import LinReg
 from lqr_reinforce import *
 import random
@@ -27,7 +27,7 @@ for H in Hs:
         np.random.seed(seed)
         random.seed(seed)
         optimizer = Adam(x_dim*a_dim+1, lr)
-        env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T = H)
+        env = LQGEnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T = H)
         batch_size = 10*H
         steps = policy_gradient_adam_linear_policy(env,explore_mag=0.1,
                                             optimizer = optimizer, batch_size=batch_size,
@@ -37,7 +37,7 @@ for H in Hs:
 
     test_perf_cross_H.append(test_perf_seeds)
 
-pickle.dump(test_perf_cross_H, open("lqr_reinforce_cross_H_160_180.p".format(H), "wb"))
+pickle.dump(test_perf_cross_H, open("lqr_reinforce_cross_H_10_160.p".format(H), "wb"))
 
 
 #H = 10: lr = 0.01, mag = 0.1, batch_size = 128
