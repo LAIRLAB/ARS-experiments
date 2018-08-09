@@ -1,7 +1,7 @@
 import numpy as np
 from envs.LQR.LQR import LQREnv
 from envs.linreg.linreg import LinReg
-from lqr_reinforce import *
+from reinforce.lqr_reinforce import *
 import random
 import pickle
 
@@ -37,7 +37,7 @@ for H in Hs:
 
     test_perf_cross_H.append(test_perf_seeds)
 
-pickle.dump(test_perf_cross_H, open("lqr_reinforce_cross_H_160_180.p".format(H), "wb"))
+pickle.dump(test_perf_cross_H, open("lqr_reinforce_cross_H_10_160.p".format(H), "wb"))
 
 
 #H = 10: lr = 0.01, mag = 0.1, batch_size = 128

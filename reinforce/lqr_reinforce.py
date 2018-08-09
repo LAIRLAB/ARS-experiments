@@ -128,7 +128,6 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
         print (info)
         if abs(perf - env.optimal_cost)/env.optimal_cost < 0.05:
             return e*batch_size
-            break
 
         #print "at epoch {}, current K's avg cummulative reward is {}".format(e, perf)
         test_perfs.append(perf)

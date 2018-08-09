@@ -1,10 +1,9 @@
 import numpy as np
-from ars.lqr_ars import *
+from exact.lqr_exact import *
 from envs.LQR.LQR import LQREnv
 import pickle
 
-
-print("start tuning parameters for ars")
+print("start tuning parameters for exact")
 stepsize = [0.001, 0.005, 0.01]
 num_directions = [10, 20, 50, 100]
 num_top_directions = [5, 10, 20, 50, 100]
@@ -20,13 +19,13 @@ x_dim = 100
 a_dim = 1
 
 K0 = np.ones((a_dim, x_dim))*0.01
-for h_id, h in enumerate(horizons):    
+for h_id, h in enumerate(horizons):
     for ss_id, ss in enumerate(stepsize):
         for num_dir_id, num_dir in enumerate(num_directions):
             for top_dir_id, top_dir in enumerate(num_top_directions):
                 for per_id, per in enumerate(pertubation):
-                    print("at {} {} {} {}".format(ss, num_dir, top_dir, per))
-                    
+                    print("Horizon length {} at {} {} {} {}".format(h, ss, num_dir, top_dir, per))
+
                     if num_dir < top_dir:
                         result_table[ss_id, num_dir_id, top_dir_id, per_id] = np.inf
                     elif num_dir >= top_dir:
@@ -36,15 +35,13 @@ for h_id, h in enumerate(horizons):
                             np.random.seed(seed)
                             random.seed(seed)
                             env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed) 
-                            test_steps = lqr_ars(env, None, ss, per, top_dir, num_dir, 1e6, K0 = K0)
+                            test_steps = lqr_exact(env, None, ss, per, top_dir, num_dir, 1e5, K0 = K0)
                             steps.append(test_steps)
-                            
+
                         avg_steps = np.mean(steps)
                         result_table[h_id][ss_id, num_dir_id, top_dir_id, per_id] = avg_steps
 
 min_indices = [np.where(result_table[i] == np.min(result_table[i])) for i in range(len(horizons))]
 print(min_indices)
-pickle.dump(result_table, open("tune_ars_results.p", 'wb'))
-
-
+pickle.dump(result_table, open("tune_exact_results.p", 'wb'))
 
