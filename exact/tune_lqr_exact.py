@@ -6,9 +6,9 @@ import random
 
 print("start tuning parameters for exact")
 stepsize = [0.001, 0.005, 0.01]
-num_directions = [10, 20, 50, 100]
-num_top_directions = [5, 10, 20, 50, 100]
-pertubation = [0.001, 0.005, 0.01, 0.02]
+num_directions = [10, 20, 50]
+num_top_directions = [5, 10, 20, 50]
+pertubation = [0.001, 0.005, 0.01]
 horizons = [10, 20, 40, 60, 80, 100, 120, 140, 160]
 result_table = [np.zeros((len(stepsize), len(num_directions), len(num_top_directions), len(pertubation))) for _ in range(len(horizons))]
 

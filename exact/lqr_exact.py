@@ -55,7 +55,7 @@ def lqr_exact(env, stats, lr, explore_mag=0.1, num_top_directions=5,
     a_dim = env.a_dim
     x_dim = env.x_dim
     T = env.T
-    batch_size = int(num_directions*2*T) + 1  # 1 extra rollout because of initial predicted actions
+    batch_size = int(num_directions*2*T) + T  # 1 extra rollout because of initial predicted actions
 
     exact_dim = a_dim * T
 
