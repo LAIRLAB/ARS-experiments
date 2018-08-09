@@ -25,10 +25,10 @@ for h_id, h in enumerate(horizons):
         for num_dir_id, num_dir in enumerate(num_directions):
             for top_dir_id, top_dir in enumerate(num_top_directions):
                 for per_id, per in enumerate(pertubation):
-                    print("at {} {} {} {}".format(ss, num_dir, top_dir, per))
+                    print("Horizon length {} at {} {} {} {}".format(h, ss, num_dir, top_dir, per))
                     
                     if num_dir < top_dir:
-                        result_table[ss_id, num_dir_id, top_dir_id, per_id] = np.inf
+                        result_table[h_id][ss_id, num_dir_id, top_dir_id, per_id] = np.inf
                     elif num_dir >= top_dir:
                         steps = []
                         for seed in tune_param_seed:
@@ -36,7 +36,7 @@ for h_id, h in enumerate(horizons):
                             np.random.seed(seed)
                             random.seed(seed)
                             env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed) 
-                            test_steps = lqr_ars(env, None, ss, per, top_dir, num_dir, 1e6, K0 = K0)
+                            test_steps = lqr_ars(env, None, ss, per, top_dir, num_dir, 1e5, K0 = K0)
                             steps.append(test_steps)
                             
                         avg_steps = np.mean(steps)

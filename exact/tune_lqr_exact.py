@@ -27,7 +27,7 @@ for h_id, h in enumerate(horizons):
                     print("Horizon length {} at {} {} {} {}".format(h, ss, num_dir, top_dir, per))
 
                     if num_dir < top_dir:
-                        result_table[ss_id, num_dir_id, top_dir_id, per_id] = np.inf
+                        result_table[h_id][ss_id, num_dir_id, top_dir_id, per_id] = np.inf
                     elif num_dir >= top_dir:
                         steps = []
                         for seed in tune_param_seed:
