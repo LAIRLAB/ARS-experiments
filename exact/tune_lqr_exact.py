@@ -2,6 +2,7 @@ import numpy as np
 from exact.lqr_exact import *
 from envs.LQR.LQR import LQREnv
 import pickle
+import random
 
 print("start tuning parameters for exact")
 stepsize = [0.001, 0.005, 0.01]
