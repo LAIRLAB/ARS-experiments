@@ -35,7 +35,7 @@ for h_id, h in enumerate(horizons):
                             print("at seed {}".format(seed))
                             np.random.seed(seed)
                             random.seed(seed)
-                            env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed) 
+                            env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T=h) 
                             test_steps = lqr_exact(env, None, ss, per, top_dir, num_dir, 1e5, K0 = K0)
                             steps.append(test_steps)
 
