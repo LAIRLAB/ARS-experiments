@@ -175,7 +175,7 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
 
 
             #optimizer.alpha /= (e+1)**0.1
-        if e*batch_size > 1e5:
+        if e*batch_size > max_iter:
             #break
             return e*batch_size
         
