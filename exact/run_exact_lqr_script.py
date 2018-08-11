@@ -31,4 +31,4 @@ for H in Hs:
 
     test_perf_cross_H.append(test_perf_seeds)
 
-pickle.dump(test_perf_cross_H, open("ars_result_cross_H_10_160.p", "wb"))
+pickle.dump(test_perf_cross_H, open("exact_result_cross_H_10_160.p", "wb"))

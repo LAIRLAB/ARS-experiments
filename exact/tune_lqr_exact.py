@@ -5,10 +5,10 @@ import pickle
 import random
 
 print("start tuning parameters for exact")
-stepsize = [0.001, 0.005, 0.01]
-num_directions = [10, 20, 50]
-num_top_directions = [5, 10, 20, 50]
-pertubation = [0.001, 0.005, 0.01]
+stepsize = [0.0005, 0.001, 0.005]
+num_directions = [1, 10, 20]
+num_top_directions = [1, 5, 10, 20]
+pertubation = [0.0005, 0.001, 0.005]
 horizons = [10, 20, 40, 60, 80, 100, 120, 140, 160]
 result_table = [np.zeros((len(stepsize), len(num_directions), len(num_top_directions), len(pertubation))) for _ in range(len(horizons))]
 
@@ -36,7 +36,7 @@ for h_id, h in enumerate(horizons):
                             np.random.seed(seed)
                             random.seed(seed)
                             env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T=h) 
-                            test_steps = lqr_exact(env, None, ss, per, top_dir, num_dir, 1e5, K0 = K0)
+                            test_steps = lqr_exact(env, None, ss, per, top_dir, num_dir, 1e6, K0 = K0)
                             steps.append(test_steps)
 
                         avg_steps = np.mean(steps)
@@ -45,4 +45,7 @@ for h_id, h in enumerate(horizons):
 min_indices = [np.where(result_table[i] == np.min(result_table[i])) for i in range(len(horizons))]
 print(min_indices)
 pickle.dump(result_table, open("tune_exact_results.p", 'wb'))
+min_indices = [np.unravel_index(np.argmin(result_table[i]), result_table[i].shape) for i in range(len(horizons))]
+print(min_indices)
+
 
