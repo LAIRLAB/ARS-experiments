@@ -1,13 +1,13 @@
 import numpy as np
-from ars.lqr_ars import *
+from exact.lqr_exact import *
 from envs.LQR.LQR import LQREnv
 import pickle
 
 print ("start running ars experiment")
-ss = {10: 0.01, 20: 0.01, 40: 0.005, 60: 0.005, 80: 0.01, 100: 0.01, 120: 0.01, 140: 0.01, 160: 0.01}
-num_dir = {10: 10, 20: 10, 40: 10, 60: 10, 80: 20, 100: 20, 120: 20, 140: 20, 160: 20}
-top_dir = {10: 10, 20: 10, 40: 10, 60: 10, 80: 5, 100: 5, 120: 5, 140: 5, 160: 5}
-per = {10: 0.01, 20: 0.01, 40: 0.001, 60: 0.001, 80: 0.01, 100: 0.01, 120: 0.005, 140: 0.005, 160: 0.005}
+ss = {10: 0.001, 20: 0.001, 40: 0.005, 60: 0.001, 80: 0.001, 100: 0.001, 120: 0.001, 140: 0.001, 160: 0.001}
+num_dir = {10: 10, 20: 10, 40: 10, 60: 10, 80: 20, 100: 10, 120: 10, 140: 10, 160: 10}
+top_dir = {10: 5, 20: 5, 40: 10, 60: 5, 80: 10, 100: 10, 120: 5, 140: 5, 160: 5}
+per = {10: 0.01, 20: 0.01, 40: 0.005, 60: 0.001, 80: 0.005, 100: 0.005, 120: 0.001, 140: 0.001, 160: 0.001}
 
 initial_seed=1000
 np.random.seed(initial_seed)
@@ -27,7 +27,7 @@ for H in Hs:
         np.random.seed(seed)
         random.seed(seed)
         env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T = H)
-        test_perf = lqr_ars(env, None, ss[H], per[H], top_dir[H], num_dir[H], 1e6, K0 = K0)
+        test_perf = lqr_exact(env, None, ss[H], per[H], top_dir[H], num_dir[H], 1e6, K0 = K0)
         test_perf_seeds.append(test_perf)
 
     test_perf_cross_H.append(test_perf_seeds)
