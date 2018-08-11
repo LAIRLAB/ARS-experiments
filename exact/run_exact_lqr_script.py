@@ -25,7 +25,6 @@ for H in Hs:
     for seed in test_param_seed:
         print("at seed {}".format(seed))
         np.random.seed(seed)
-        random.seed(seed)
         env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T = H)
         test_perf = lqr_exact(env, None, ss[H], per[H], top_dir[H], num_dir[H], 1e6, K0 = K0)
         test_perf_seeds.append(test_perf)
