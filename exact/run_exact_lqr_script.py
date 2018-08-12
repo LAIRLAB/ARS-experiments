@@ -19,7 +19,7 @@ test_param_seed = np.random.randint(low = 1, high = 1e8, size = 10)
 x_dim = 100 #500
 a_dim = 1
 
-Hs = [10, 20, 40, 60, 80, 100, 120, 140, 160]
+Hs = [5, 10, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
 
 
 K0 = np.ones((a_dim, x_dim))*0.01
