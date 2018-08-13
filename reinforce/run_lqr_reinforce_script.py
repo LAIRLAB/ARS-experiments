@@ -29,7 +29,7 @@ for H in Hs:
         optimizer = Adam(x_dim*a_dim+1, lr)
         env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T = H)
         batch_size = 100 # 10*H
-        max_iter = 1e6
+        max_iter = 1e5 * H
         steps = policy_gradient_adam_linear_policy(env,explore_mag=0.1,
                                             optimizer = optimizer, batch_size=batch_size,
                                             max_iter = max_iter,

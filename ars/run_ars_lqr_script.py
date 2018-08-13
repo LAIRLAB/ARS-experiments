@@ -31,7 +31,7 @@ for H in Hs:
         np.random.seed(seed)
         random.seed(seed)
         env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T = H)
-        test_perf = lqr_ars(env, None, ss, per, top_dir, num_dir, 1e6, K0 = K0)
+        test_perf = lqr_ars(env, None, ss, per, top_dir, num_dir, 1e5*H, K0 = K0)
         test_perf_seeds.append(test_perf)
 
     test_perf_cross_H.append(test_perf_seeds)
