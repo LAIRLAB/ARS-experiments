@@ -50,7 +50,7 @@ def evaluation(env, K, stats = None, num_trajs = 10):
 
 
 def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5, 
-            num_directions = 10, num_total_steps = 100, K0 = None):
+            num_directions = 10, num_total_steps = 100, K0 = None, verbose=True):
     '''
     input:
         env: gym-like environment 
@@ -66,7 +66,6 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
         (iter id, total steps so far,current test cummulative cost)
     '''
 
-    print ("running ars..")
     a_dim = env.a_dim
     x_dim = env.x_dim
     T = env.T #traj length
@@ -76,14 +75,16 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
         K0 = 0.0 * np.random.randn(a_dim, x_dim)
     K = K0
 
-    print ("[optimal K's performance is {}]".format(env.optimal_cost))
+    if verbose:        
+        print ("[optimal K's performance is {}]".format(env.optimal_cost))
     test_perfs = []
 
     e = 0
     while True:
         cum_c = env.evaluate_policy(K)
         info = (e, e*batch_size, cum_c)
-        print (info)
+        if verbose:            
+            print (info)
         test_perfs.append(info)
 
         # If the policy cost is within 5%
