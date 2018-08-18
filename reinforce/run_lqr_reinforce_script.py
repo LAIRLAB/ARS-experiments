@@ -4,26 +4,36 @@ from envs.linreg.linreg import LinReg
 from reinforce.lqr_reinforce import *
 import random
 import pickle
+import argparse
+from progress.bar import Bar
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--H_start', type=int, default=10, help="Horizon length to start with")
+parser.add_argument('--H_end', type=int, default=200, help="Horizon length to end with")
+parser.add_argument('--H_bin', type=int, default=20, help="Horizon length spacing at which experiments are done (or bin size)")
+args = parser.parse_args()
 
 initial_seed=1000
 np.random.seed(initial_seed)
-test_param_seed = np.random.randint(low = 1, high = 1e8, size = 10)
+num_random_seeds = 10
+test_param_seed = np.random.randint(low = 1, high = 1e8, size = num_random_seeds)
 x_dim = 100
 a_dim = 1
 
 
-Hs = [5, 10, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+Hs = list(range(args.H_start, args.H_end + args.H_bin, args.H_bin))
 
 
 lr = 0.005 #0.01
 K0 = np.ones((a_dim, x_dim))*0.01
 test_perf_cross_H = []
+bar = Bar('Processing', max = len(Hs) * num_random_seeds)
 for H in Hs:
-    print("at H = {0}".format(H))
+    #print("at H = {0}".format(H))    
     test_perf_seeds = []
     for seed in test_param_seed:
-        print ("at seed {0}".format(seed))
+        #print ("at seed {0}".format(seed))
+        bar.next()
         np.random.seed(seed)
         random.seed(seed)
         optimizer = Adam(x_dim*a_dim+1, lr)
@@ -37,8 +47,9 @@ for H in Hs:
         test_perf_seeds.append(steps)
 
     test_perf_cross_H.append(test_perf_seeds)
-
-pickle.dump(test_perf_cross_H, open("lqr_reinforce_cross_H_10_160.p".format(H), "wb"))
+bar.finish()
+filename = "lqr_reinforce_cross_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
+pickle.dump(test_perf_cross_H, open(filename, "wb"))
 
 
 #H = 10: lr = 0.01, mag = 0.1, batch_size = 128

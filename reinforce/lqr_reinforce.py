@@ -99,7 +99,7 @@ def processing_batch(trajs, gamma = 0.99, stats = None):
     return xs, acts, acts_mean, advs, ctgs
 
 def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1, 
-            batch_size = 100, max_iter = 100, K0 = None, Natural = False, kl = 1e-3, stats = None, sigma = None):
+                                       batch_size = 100, max_iter = 100, K0 = None, Natural = False, kl = 1e-3, stats = None, sigma = None, verbose=True):
 
     a_dim = env.a_dim
     x_dim = env.x_dim 
@@ -110,12 +110,12 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
 
     K = K0
     sigma = sigma
-    print (sigma)
     baseline = 0.0 
 
     #evalue the optimal K:
     #optimal_perf = evaluation(env = env, batch_size = batch_size*2, K = env.optimal_K)
-    print ("optimal K's performance is {}".format(-env.optimal_cost))
+    if verbose:        
+        print ("optimal K's performance is {}".format(-env.optimal_cost))
 
     test_perfs = []
     #for e in range(max_iter):
@@ -125,7 +125,8 @@ def policy_gradient_adam_linear_policy(env, optimizer, explore_mag = 0.1,
         #perf = evaluation(env = env, batch_size = batch_size, K=K, stats = stats)
         perf = env.evaluate_policy(K)
         info = (e, e*batch_size, sigma, optimizer.alpha, perf)
-        print (info)
+        if verbose:            
+            print (info)
         if abs(perf - env.optimal_cost)/env.optimal_cost < 0.05:
             return e*batch_size
 
