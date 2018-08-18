@@ -48,8 +48,8 @@ class LQREnv(gym.Env):
       self.x_dim = x_dim
       self.a_dim = u_dim
       
-      self.observation_space = gym_box.Box(low = -np.inf, high = np.inf, shape = (x_dim, ))
-      self.action_space = gym_box.Box(low = -np.inf, high = np.inf, shape = (u_dim, ))
+      self.observation_space = gym_box.Box(low = -np.inf, high = np.inf, shape = (x_dim, ), dtype=np.float32)
+      self.action_space = gym_box.Box(low = -np.inf, high = np.inf, shape = (u_dim, ), dtype=np.float32)
       
       self.init_state = np.random.randn(x_dim)
       
