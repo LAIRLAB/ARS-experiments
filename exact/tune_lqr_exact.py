@@ -13,9 +13,9 @@ parser.add_argument('--H_bin', type=int, default=20, help="Horizon length spacin
 args = parser.parse_args()
 
 print("start tuning parameters for exact")
-stepsize = [0.0005, 0.001, 0.005, 0.01]
-num_directions = [1, 10, 20, 50]
-num_top_directions = [1, 5, 10, 20, 50]
+stepsize = [0.0005, 0.001, 0.005, 0.01, 0.05]
+num_directions = [1, 10, 20, 50, 100]
+num_top_directions = [1, 5, 10, 20, 50, 100]
 pertubation = [0.0005, 0.001, 0.005, 0.01]
 horizons = list(range(args.H_start, args.H_end + args.H_bin, args.H_bin))
 result_table = [np.zeros((len(stepsize), len(num_directions), len(num_top_directions), len(pertubation))) for _ in range(len(horizons))]

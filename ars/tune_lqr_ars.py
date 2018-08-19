@@ -12,7 +12,7 @@ parser.add_argument('--H_bin', type=int, default=20, help="Horizon length spacin
 args = parser.parse_args()
 
 print("start tuning parameters for ars")
-stepsize = [0.0005, 0.001, 0.005, 0.01]
+stepsize = [0.0005, 0.001, 0.005, 0.01, 0.05]
 num_directions = [1, 10, 20, 50]
 num_top_directions = [1, 5, 10, 20, 50]
 pertubation = [0.0005, 0.001, 0.005, 0.01]
