@@ -25,6 +25,8 @@ x_dim = 100
 a_dim = 1
 
 Hs = list(range(args.H_start, args.H_end + args.H_bin, args.H_bin))
+# FIXME: Reassigning lr and explore mag (not using tuning results)
+lr, explore_mag = [0.001 for _ in range(len(Hs))], [0.1 for _ in range(len(Hs))]
 
 K0 = np.ones((a_dim, x_dim))*0.01
 test_perf_cross_H = []
