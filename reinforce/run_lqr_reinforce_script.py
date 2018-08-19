@@ -44,6 +44,7 @@ for H_id, H in enumerate(Hs):
         steps = policy_gradient_adam_linear_policy(env,explore_mag=explore_mag[H_id],
                                             optimizer = optimizer, batch_size=batch_size,
                                             max_iter = max_iter,
+                                                   K0=K0, Natural=False, kl=0.005, stats=None, verbose=False)
         test_perf_seeds.append(steps)
 
     test_perf_cross_H.append(test_perf_seeds)
