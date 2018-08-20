@@ -14,7 +14,10 @@ args = parser.parse_args()
 
 print ("start running ars experiment")
 
-filename = filename = "tune_lqr_ars_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
+if args.use_one_direction:
+    filename = "tune_lqr_ars_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+"_od.p"
+else:    
+    filename = "tune_lqr_ars_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
 _, data = pickle.load(open(filename, 'rb'))
 ss, num_dir, top_dir, per = data
 
@@ -43,5 +46,8 @@ for H_id, H in enumerate(Hs):
 
     test_perf_cross_H.append(test_perf_seeds)
 bar.finish()
-filename = "ars_result_cross_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
+if args.use_one_direction:    
+    filename = "ars_result_cross_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+"_od.p"
+else:
+    filename = "ars_result_cross_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
 pickle.dump(test_perf_cross_H, open(filename, "wb"))

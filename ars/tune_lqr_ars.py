@@ -9,12 +9,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--H_start', type=int, default=10, help="Horizon length to start with")
 parser.add_argument('--H_end', type=int, default=200, help="Horizon length to end with")
 parser.add_argument('--H_bin', type=int, default=20, help="Horizon length spacing at which experiments are done (or bin size)")
+parser.add_argument('--use_one_direction', action="store_true")
 args = parser.parse_args()
 
 print("start tuning parameters for ars")
-stepsize = [0.0005, 0.001, 0.005, 0.01, 0.05]
-num_directions = [1, 10, 20, 50, 100]
-num_top_directions = [1, 5, 10, 20, 50, 100]
+stepsize = [0.0005, 0.001, 0.005, 0.01]
+num_directions = [1, 10, 20, 50]
+num_top_directions = [1, 5, 10, 20, 50]
 pertubation = [0.0005, 0.001, 0.005, 0.01]
 horizons = list(range(args.H_start, args.H_end + args.H_bin, args.H_bin))
 result_table = [np.zeros((len(stepsize), len(num_directions), len(num_top_directions), len(pertubation))) for _ in range(len(horizons))]
@@ -44,7 +45,7 @@ for h_id, h in enumerate(horizons):
                             np.random.seed(seed)
                             random.seed(seed)
                             env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T=h)
-                            test_steps = lqr_ars(env, None, ss, per, top_dir, num_dir, 1e6, K0 = K0, verbose=False)
+                            test_steps = lqr_ars(env, None, ss, per, top_dir, num_dir, 1e6, K0 = K0, verbose=False, use_one_direction=args.use_one_direction)
                             steps.append(test_steps)
                             
                         avg_steps = np.mean(steps)
@@ -55,7 +56,9 @@ ss = np.array(stepsize)[min_indices[:, 0]]
 nd = np.array(num_directions)[min_indices[:, 1]]
 ntd = np.array(num_top_directions)[min_indices[:, 2]]
 pt = np.array(pertubation)[min_indices[:, 3]]
-
-filename = "tune_lqr_ars_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
+if args.use_one_direction:
+    filename = "tune_lqr_ars_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+"_od"+".p"
+else:    
+    filename = "tune_lqr_ars_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
 data = (result_table, (ss, nd, ntd, pt))
 pickle.dump(data, open(filename, 'wb'))
