@@ -50,11 +50,14 @@ def evaluation(env, K, stats = None, num_trajs = 10):
 
 
 def lqr_exact(env, stats, lr, explore_mag=0.1, num_top_directions=5,
-              num_directions=10, num_total_steps=100,K0=None, verbose=True):
+              num_directions=10, num_total_steps=100,K0=None, verbose=True, use_one_direction=False):
     a_dim = env.a_dim
     x_dim = env.x_dim
     T = env.T
-    batch_size = int(num_directions*2*T) + T  # 1 extra rollout because of initial predicted actions
+    if not use_one_direction:        
+        batch_size = int(num_directions*2*T) + T  # 1 extra rollout because of initial predicted actions
+    else:
+        batch_size = int(num_directions*T) + T
 
     exact_dim = a_dim * T
 
@@ -79,14 +82,20 @@ def lqr_exact(env, stats, lr, explore_mag=0.1, num_top_directions=5,
             return e * batch_size
 
         directions = sample_directions(num_directions, exact_dim)
-        returns = np.zeros((2, num_directions))
+        if not use_one_direction:            
+            returns = np.zeros((2, num_directions))
+        else:
+            returns = np.zeros((1, num_directions))
 
         traj = rollout_one_traj(env = env, K=K, stats=stats)
         acts = traj.acts
+        orig_return = traj.c_rew
         xs = np.array(traj.xs)
 
         for d in range(num_directions):
             for posneg in range(2):
+                if use_one_direction and posneg==1:
+                    continue
                 perturbations = (-2*posneg + 1) * explore_mag * directions[d]
                 perturbations = perturbations.reshape(T, a_dim)
                 perturbed_acts = np.array(acts) + perturbations
@@ -100,7 +109,11 @@ def lqr_exact(env, stats, lr, explore_mag=0.1, num_top_directions=5,
         std_top_returns = np.std(top_returns)
         if std_top_returns == 0:
             std_top_returns = 1.
-        action_gradient = np.dot(top_directions.T, (top_returns[:, 0] - top_returns[:, 1])) / (top_directions.shape[0] * std_top_returns)
+        if not use_one_direction:
+            diff_returns = top_returns[:, 0] - top_returns[:, 1]
+        else:
+            diff_returns = top_returns[:, 0] - orig_return
+        action_gradient = np.dot(top_directions.T, (diff_returns)) / (top_directions.shape[0] * std_top_returns)
         action_gradient = action_gradient.reshape(T, a_dim)        
         param_update = lr * action_gradient.T.dot(xs)
         K = K + param_update
