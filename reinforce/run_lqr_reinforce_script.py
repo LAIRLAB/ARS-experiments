@@ -13,9 +13,9 @@ parser.add_argument('--H_end', type=int, default=200, help="Horizon length to en
 parser.add_argument('--H_bin', type=int, default=20, help="Horizon length spacing at which experiments are done (or bin size)")
 args = parser.parse_args()
 
-filename = "tune_lqr_reinforce_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
-_, data = pickle.load(open(filename, 'rb'))
-lr, explore_mag = data
+#filename = "tune_lqr_reinforce_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
+#_, data = pickle.load(open(filename, 'rb'))
+#lr, explore_mag = data
 
 initial_seed=1000
 np.random.seed(initial_seed)
