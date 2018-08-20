@@ -50,7 +50,7 @@ def evaluation(env, K, stats = None, num_trajs = 10):
 
 
 def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5, 
-            num_directions = 10, num_total_steps = 100, K0 = None, verbose=True):
+            num_directions = 10, num_total_steps = 100, K0 = None, verbose=True, use_one_direction=False):
     '''
     input:
         env: gym-like environment 
@@ -69,7 +69,10 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
     a_dim = env.a_dim
     x_dim = env.x_dim
     T = env.T #traj length
-    batch_size = int(num_directions*2*T)
+    if use_one_direction:
+        batch_size = int(num_directions*T) + T
+    else:        
+        batch_size = int(num_directions*2*T)
 
     if K0 is None:
         K0 = 0.0 * np.random.randn(a_dim, x_dim)
@@ -98,10 +101,19 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
         w = K.flatten()
         #given  w reshaped from the current K, generated perturbed policies. 
         perturbed_ws = perturb_parameters(w, directions, explore_mag)
-        returns = np.zeros((2, num_directions))
+        if use_one_direction:
+            returns = np.zeros((1, num_directions))
+        else:            
+            returns = np.zeros((2, num_directions))
+
+        orig_return=None
+        if use_one_direction:
+            orig_return = rollout_one_traj(env=env, K=K, stats=stats).c_rew
 
         for d in range(num_directions): #for each direction
             for posneg in range(2): # do twice: + and -
+                if use_one_direction and posneg == 1:
+                    continue
                 Kp = perturbed_ws[posneg, d].reshape(a_dim,x_dim)
                 #get return by genearting a traj using the pertubed policy Kp
                 traj = rollout_one_traj(env = env, K = Kp, stats = stats)
@@ -113,7 +125,7 @@ def lqr_ars(env, stats, lr, explore_mag = 0.1, num_top_directions = 5,
         top_directions, top_returns = get_top_directions_returns(
                     returns.T, directions, num_top_directions)
 
-        w = update_parameters(w, lr, top_returns, top_directions)
+        w = update_parameters(w, lr, top_returns, top_directions, use_one_direction=use_one_direction, orig_return=orig_return)
         K = w.reshape(a_dim, x_dim)
 
         #perform test: report cummualative cost:

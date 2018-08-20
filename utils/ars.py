@@ -63,7 +63,7 @@ def get_top_directions_returns(returns, directions, num_top):
     top_indices = np.argsort(max_returns)[-num_top:]
     return directions[top_indices, :], returns[top_indices, :]
 
-def update_parameters(params, stepsize, top_returns, top_directions):
+def update_parameters(params, stepsize, top_returns, top_directions, use_one_direction=False, orig_return=None):
     '''
     params (np array of size num_params): parameter vector
     stepsize (float): step size of the update
@@ -76,7 +76,10 @@ def update_parameters(params, stepsize, top_returns, top_directions):
     std_returns = np.std(top_returns)
     if std_returns == 0:
         std_returns = 1.0
-    diff_returns = top_returns[:, 0] - top_returns[:, 1]  # assuming that the first column is the +ve direction and the second column is the -ve direction
+    if not use_one_direction:        
+        diff_returns = top_returns[:, 0] - top_returns[:, 1]  # assuming that the first column is the +ve direction and the second column is the -ve direction
+    else:
+        diff_returns = top_returns[:, 0] - orig_return
     params_update = np.dot(top_directions.T, diff_returns)
     new_params = params + (stepsize/(num_top*std_returns)) * params_update
     return new_params

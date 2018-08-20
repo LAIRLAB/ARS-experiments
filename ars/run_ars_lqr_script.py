@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--H_start', type=int, default=10, help="Horizon length to start with")
 parser.add_argument('--H_end', type=int, default=200, help="Horizon length to end with")
 parser.add_argument('--H_bin', type=int, default=20, help="Horizon length spacing at which experiments are done (or bin size)")
+parser.add_argument('--use_one_direction', action="store_true")
 args = parser.parse_args()
 
 print ("start running ars experiment")
@@ -37,7 +38,7 @@ for H_id, H in enumerate(Hs):
         np.random.seed(seed)
         random.seed(seed)
         env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T = H)
-        test_perf = lqr_ars(env, None, ss[H_id], per[H_id], top_dir[H_id], num_dir[H_id], 1e5*H, K0 = K0, verbose=False)
+        test_perf = lqr_ars(env, None, ss[H_id], per[H_id], top_dir[H_id], num_dir[H_id], 1e5*H, K0 = K0, verbose=False, use_one_direction=args.use_one_direction)
         test_perf_seeds.append(test_perf)
 
     test_perf_cross_H.append(test_perf_seeds)
