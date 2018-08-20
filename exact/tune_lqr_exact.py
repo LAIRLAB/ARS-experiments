@@ -46,7 +46,7 @@ for h_id, h in enumerate(horizons):
                             np.random.seed(seed)
                             random.seed(seed)
                             env = LQREnv(x_dim = x_dim, u_dim = a_dim, rank = 5, seed=seed, T=h) 
-                            test_steps = lqr_exact(env, None, ss, per, top_dir, num_dir, 1e6, K0 = K0, verbose=False, use_one_direction=use_one_direction)
+                            test_steps = lqr_exact(env, None, ss, per, top_dir, num_dir, 1e6, K0 = K0, verbose=False, use_one_direction=args.use_one_direction)
                             steps.append(test_steps)
 
                         avg_steps = np.mean(steps)
