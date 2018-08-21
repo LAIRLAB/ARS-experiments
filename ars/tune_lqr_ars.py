@@ -13,7 +13,7 @@ parser.add_argument('--use_one_direction', action="store_true")
 args = parser.parse_args()
 
 print("start tuning parameters for ars")
-stepsize = [0.0005, 0.001, 0.005, 0.01]
+stepsize = [1e-4, 0.0005, 0.001, 0.005]
 num_directions = [1, 5, 10]
 num_top_directions = [1, 5, 10]
 pertubation = [1e-4, 5e-4, 0.001]
