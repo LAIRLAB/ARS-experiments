@@ -14,10 +14,10 @@ parser.add_argument('--use_one_direction', action="store_true")
 args = parser.parse_args()
 
 print("start tuning parameters for exact")
-stepsize = [5e-5, 1e-4, 0.0005, 0.001]
+stepsize = [5e-6, 1e-5, 5e-5, 1e-4]
 num_directions = [1, 5, 10]
 num_top_directions = [1, 5, 10]
-pertubation = [1e-4, 5e-4, 0.001]
+pertubation = [1e-5, 5e-5, 1e-4]
 horizons = list(range(args.H_start, args.H_end + args.H_bin, args.H_bin))
 result_table = [np.zeros((len(stepsize), len(num_directions), len(num_top_directions), len(pertubation))) for _ in range(len(horizons))]
 
