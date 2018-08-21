@@ -9,28 +9,37 @@ parser.add_argument('--H_end', type=int, default=200, help="Horizon length to en
 parser.add_argument('--H_bin', type=int, default=20, help="Horizon length spacing at which experiments are done (or bin size)")
 parser.add_argument('--episode', action='store_true')
 parser.add_argument('--reinforce', action='store_true')
+parser.add_argument('--use_one_direction', action="store_true")
 args = parser.parse_args()
 
 ars_filename = "ars_result_cross_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
 exact_filename = "exact_result_cross_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
 if args.reinforce:    
     reinforce_filename = "lqr_reinforce_cross_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+".p"
+if args.use_one_direction:
+    exact_od_filename = "exact_result_cross_H_" + str(args.H_start)+"_"+str(args.H_end)+"_"+str(args.H_bin)+"_od.p"
 
 ars_results = pickle.load(open(ars_filename, 'rb'))
 exact_results = pickle.load(open(exact_filename, 'rb'))
 if args.reinforce:    
     reinforce_results = pickle.load(open(reinforce_filename, 'rb'))
+if args.use_one_direction:
+    exact_od_results = pickle.load(open(exact_od_filename, 'rb'))
 
 mean_ars = np.mean(np.array(ars_results), axis=1)
 mean_exact = np.mean(np.array(exact_results), axis=1)
 if args.reinforce:    
     mean_reinforce = np.mean(np.array(reinforce_results), axis=1)
+if args.use_one_direction:
+    mean_exact_od = np.mean(np.array(exact_od_results), axis=1)
 
 # 10 random seeds were used
 std_ars = np.std(np.array(ars_results), axis=1) / np.sqrt(10)
 std_exact = np.std(np.array(exact_results), axis=1) / np.sqrt(10)
 if args.reinforce:    
     std_reinforce = np.std(np.array(reinforce_results), axis=1) / np.sqrt(10)
+if args.use_one_direction:
+    std_exact_od = np.std(np.array(exact_od_results), axis=1) / np.sqrt(10)
 
 H = list(range(args.H_start, args.H_end+args.H_bin, args.H_bin))
 
@@ -42,12 +51,19 @@ if args.episode:
         std_reinforce = np.divide(std_reinforce, H)
     mean_exact = np.divide(mean_exact, H)
     std_exact = np.divide(std_exact, H)
+    if args.use_one_direction:
+        mean_exact_od = np.divide(mean_exact_od, H)
+        std_exact_od = np.divide(std_exact_od, H)
 
 plt.plot(H, mean_ars, color='red', label='ARS', linewidth=2)
 plt.fill_between(H, np.maximum(0, mean_ars - std_ars), np.minimum(1e8, mean_ars + std_ars), facecolor='red', alpha=0.2)
 
 plt.plot(H, mean_exact, color='blue', label='ExAct', linewidth=2)
 plt.fill_between(H, np.maximum(0, mean_exact - std_exact), np.minimum(1e8, mean_exact + std_exact), facecolor='blue', alpha=0.2)
+
+if args.use_one_direction:
+    plt.plot(H, mean_exact_od, color='black', label='ExAct (one direction)', linewidth=2)
+    plt.fill_between(H, np.maximum(0, mean_exact_od - std_exact_od), np.minimum(1e8, mean_exact_od + std_exact_od), facecolor='black', alpha=0.2)
 
 if args.reinforce:    
     plt.plot(H, mean_reinforce, color='green', label='REINFORCE', linewidth=2)
