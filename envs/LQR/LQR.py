@@ -72,7 +72,7 @@ class LQREnv(gym.Env):
       
       cost = self.state.dot(self.Q).dot(self.state) + a.dot(self.R).dot(a)
       next_state = self.A.dot(self.state.reshape((self.x_dim, 1))) + self.B.dot(a.reshape((self.a_dim, 1)));
-      next_state = next_state.reshape(self.x_dim)
+      self.state = next_state.reshape(self.x_dim)
       
       done = False
       self.t += 1
