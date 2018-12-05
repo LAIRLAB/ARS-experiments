@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 import csv
 import numpy as np
 
+# EDIT: Increase font size according to reviwer's comments
+plt.rcParams.update({'font.size': 25})
+
 d = input('Input dimensionality?\n')
 if d == "10" or d == "100":
     exps = ['ars', 'reinforce', 'sgd', 'naturalreinforce', 'newton']
@@ -52,8 +55,11 @@ for e in exps:
 
 # Plotting
 colors = ['red', 'blue', 'green', 'black', 'magenta']
+labels = [e for e in exps]
+if len(labels) >= 4:
+    labels[3] = 'n_reinforce'
 for i, e in enumerate(exps):
-    plt.plot(n_accesses[e][5488], meanresults[e], color=colors[i], label=e, linewidth=2)
+    plt.plot(n_accesses[e][5488], meanresults[e], color=colors[i], label=labels[i], linewidth=2)
     plt.fill_between(n_accesses[e][5488], np.maximum(minresults[e], meanresults[e]-stdresults[e]), np.minimum(maxresults[e], meanresults[e]+stdresults[e]), facecolor=colors[i], alpha=0.2)
 
 plt.xscale('log')
@@ -61,6 +67,7 @@ plt.xlim([0, num_accesses])
 # plt.ylim([-1, 35])
 plt.xlabel('Number of samples')
 plt.ylabel('Test squared loss')
-plt.title('Linear regression with input dimensionality '+d)
-plt.legend()
+plt.title('Linear regression with dimensionality '+d)
+plt.legend(prop={'size': 25})
+plt.gcf().set_size_inches([11.16, 8.26])
 plt.show()

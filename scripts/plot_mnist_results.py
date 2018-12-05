@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 import csv
 import numpy as np
 
+# EDIT: Increase font size according to reviwer's comments
+plt.rcParams.update({'font.size': 25})
+
 seeds = [5488, 7151, 6027, 5448, 4236, 6458, 4375, 8917, 9636, 3834]
 exps = ['ars', 'reinforce', 'sgd']
 num_accesses = 1000000
@@ -44,12 +47,13 @@ for e in exps:
 # Plotting
 colors = ['red', 'blue', 'green', 'cyan']
 for i, e in enumerate(exps):
-    plt.plot(n_accesses[e][5488], meanresults[e], color=colors[i], label=e)
-    plt.fill_between(n_accesses[e][5488], np.maximum(minresults[e], meanresults[e]-stdresults[e]), np.minimum(maxresults[e], meanresults[e]+stdresults[e]), facecolor=colors[i], alpha=0.2)
+    plt.plot(np.array(n_accesses[e][5488])/100000, meanresults[e], color=colors[i], label=e)
+    plt.fill_between(np.array(n_accesses[e][5488])/100000, np.maximum(minresults[e], meanresults[e]-stdresults[e]), np.minimum(maxresults[e], meanresults[e]+stdresults[e]), facecolor=colors[i], alpha=0.2)
 
 
-plt.xlabel('Number of samples')
+plt.xlabel('Number of samples (multiples of $10^5$)')
 plt.ylabel('Test accuracy')
 plt.title('MNIST Experiment')
-plt.legend()
+plt.legend(loc='lower right')
+plt.gcf().set_size_inches([11.16, 8.26])
 plt.show()
