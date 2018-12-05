@@ -1,11 +1,19 @@
 # Exploration in Action Space
 
+## Citation
+
+If you use this code, please cite the following paper
+
+> Anirudh Vemula, Wen Sun, J. Andrew Bagnell. **Exploration in Action Space**. *Learning and Inference in Robotics: Integrating Structure, Priors and Models workshop. Robotics: Science and Systems (RSS). 2018*
+
+
 ## Reproducing Experiments
 
 ### Setup
 
 Run 
 ```shell
+pip install -r requirements.txt
 ./scripts/setup.sh
 ```
 
@@ -42,8 +50,8 @@ To plot the results of the experiments, run
 ``` shell
 python scripts/plot_linear_results.py
 ```
-### Linear Quadratic Regulator
-
+### Linear Quadratic Regulator (deprecated)
+*Use the LQR experiments script in this repository. This script is deprecated*
 To reproduce the results of the LQR experiments, run
 
 ```shell
