@@ -1,0 +1,7 @@
+gym
+torch
+numpy
+argparse
+ipdb
+matplotlib
+scipy
