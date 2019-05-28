@@ -51,7 +51,8 @@ To plot the results of the experiments, run
 python scripts/plot_linear_results.py
 ```
 ### Linear Quadratic Regulator (deprecated)
-*Use the LQR experiments script in this repository. This script is deprecated*
+*Use the LQR experiments script in [this](https://github.com/LAIRLAB/contrasting_exploration_rl) repository. This script is deprecated*
+
 To reproduce the results of the LQR experiments, run
 
 ```shell
